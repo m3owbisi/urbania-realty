@@ -6,3 +6,10 @@ build/
 *.zip
 *.tsbuildinfo
 next-env.d.ts
+.next/
+out/
+build/
+.DS_Store
+*.zip
+*.tsbuildinfo
+next-env.d.ts
