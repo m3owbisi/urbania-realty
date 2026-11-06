@@ -1,0 +1,213 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+/* Tailwind: theme + utilities only (no preflight), so the Figma-accurate CSS below is untouched.
+   Colour roles are available as utilities: bg-brand, text-chrome, border-line, text-accent, text-muted. */
+@theme inline {
+  --color-brand: var(--gold);
+  --color-chrome: var(--ui);
+  --color-accent: var(--gold-accent);
+  --color-line: var(--gold-line);
+  --color-muted: var(--grey);
+}
+
+/* Fonts: Playfair + Montserrat (Gotham stand-in) are open-licence and shipped. Gotham is licensed:
+   drop Gotham-Light.woff2 / Gotham-Book.woff2 into public/fonts and it takes over automatically. */
+@font-face { font-family: 'Gotham'; font-weight: 300; font-display: swap; src: local('Gotham Light'), url('/fonts/Gotham-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Gotham'; font-weight: 400; font-display: swap; src: local('Gotham Book'), url('/fonts/Gotham-Book.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-weight: 300; font-display: swap; src: url('/fonts/Montserrat-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-weight: 400; font-display: swap; src: url('/fonts/Montserrat-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Playfair Display'; font-weight: 400; font-display: swap; src: url('/fonts/PlayfairDisplay-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-weight: 400; font-display: swap; src: url('/fonts/SourceSans3-Regular.woff2') format('woff2'); }
+
+/* 1rem = 16 Figma px on a 1920x1080 canvas, shrinking with the viewport so laptops match the design proportions. */
+html { font-size: min(0.8333vw, 1.4815vh); }
+
+:root {
+  /* Colour roles (design system):
+     --gold        #99712B  brand: logo, homescreen headline/copy, CTA
+     --ui          #B08538  chrome: control buttons, panel borders, chips, active fills
+     --gold-accent #D6A041  accent: Explore label, active number, selector tint
+     --gold-line   #D9B25C  active-item border   --ui-deep #8F6A26 chevrons   --grey #909090 inactive numbers */
+  --gold: #99712b;
+  --ui: #b08538;
+  --ui-hover: rgba(176, 133, 56, 0.8);
+  --ui-deep: #8f6a26;
+  --gold-hover: #99712bcc;
+  --gold-accent: #d6a041;
+  --gold-line: #d9b25c;
+  --grey: #909090;
+  --gutter: 4.6875rem;
+  --font-sans: 'Gotham', 'Montserrat', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+* { -webkit-tap-highlight-color: transparent; }
+a, button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+body { font-family: var(--font-sans); font-size: 1rem; font-weight: 300; color: var(--gold); overflow: hidden; }
+
+.home {
+  position: relative; width: 100%; height: 100dvh; overflow: hidden; background: #000;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+
+/* logos */
+.navbar { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+.navbar img { position: absolute; height: auto; pointer-events: auto; }
+.logo-project { left: var(--gutter); top: 3.9375rem; width: 11.25rem; }
+.logo-group { right: -2.0625rem; top: -1.5rem; width: 16.8125rem; }   /* Figma "Group 9": 269x269 at left 1684, top -24 */
+.logo-partner { right: 3.5rem; top: 3.4rem; width: 5.3125rem; }
+
+/* homescreen hero (Figma: Playfair 80/96, Gotham Light 30/36, button 240x44) */
+.hero { position: absolute; inset: 0; z-index: 5; }
+.hero-copy { position: absolute; left: var(--gutter); top: 38.6%; }
+h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-size: 5rem; line-height: 6rem; white-space: nowrap; }
+.hero p { margin-top: 0.9375rem; color: var(--gold); font-weight: 300; font-size: 1.875rem; line-height: 2.25rem; }
+.line { display: block; white-space: nowrap; }
+.cta-wrap { margin-top: 2.1875rem; }
+.cta {
+  display: inline-flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 0.875rem; white-space: nowrap; min-width: 15rem; height: 2.75rem; padding: 0 1.25rem; line-height: 1;
+  border: 1px solid var(--gold); border-radius: 0.375rem; color: var(--gold); text-decoration: none;
+  font-weight: 300; font-size: 1.25rem; transition: background-color 0.25s ease, color 0.25s ease;
+}
+.cta:hover, .cta:focus-visible { background: var(--gold-hover); color: #000; outline: none; }
+.cta svg { width: 1.625rem; height: 0.875rem; transition: transform 0.25s ease; }
+.cta:hover svg { transform: translateX(0.25rem); }
+
+/* watermark: The VR Company (supplied markup) */
+.watermark { position: absolute; z-index: 12; right: var(--gutter); bottom: 1.5rem; display: inline-flex; color: #fff; text-decoration: none; opacity: 0.85; transition: opacity 0.2s ease; }
+.tvrc { display: inline-flex; align-items: center; gap: 0.5rem; }
+.tvrc__mark { display: block; width: 1.9rem; height: auto; flex: none; }
+.tvrc__word { font-size: 0.6875rem; line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 400; white-space: nowrap; }
+.watermark:hover, .watermark:focus-visible { opacity: 1; outline: none; }
+
+.rotate-overlay {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background: rgba(0, 0, 0, 0.92); color: var(--gold); text-align: center; padding: 1.5rem; font-size: 1.1rem;
+}
+
+/* scenes */
+.scene .ui { position: absolute; inset: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.scene { background-size: cover; background-position: center; background-repeat: no-repeat; }
+.scene .ui :is(a, button, aside, section, nav, .watermark) { pointer-events: auto; }
+.ui-hidden { opacity: 0; }
+.ui-hidden :is(a, button, aside, section, nav, .watermark) { pointer-events: none !important; }
+.pano { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.pano:active { cursor: grabbing; }
+.shade-left { position: absolute; z-index: 1; left: 0; top: 0; width: 47.75rem; height: 100%; pointer-events: none; background: linear-gradient(270deg, rgba(0, 0, 0, 0) 1.9%, #000 139.89%); }
+.shade { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 39.6%; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.48)); }
+.tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+.controls { position: absolute; z-index: 20; left: var(--gutter); bottom: 3.75rem; display: flex; gap: 0.625rem; }
+.ctl {
+  display: grid; place-items: center; width: 2.125rem; height: 2.125rem; padding: 0; cursor: pointer;
+  background: rgba(0, 0, 0, 0.6); border: 1px solid var(--ui); border-radius: 0.5rem; color: var(--ui);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.ctl svg { width: 1rem; height: 1rem; }
+.ctl:hover, .ctl:focus-visible, .ctl[aria-pressed='true'] { background: var(--ui-hover); color: #fff; outline: none; }
+
+/* View button: other controls fade out, the eye glides into the leftmost slot and tucks away */
+.ctl { transition: background-color 0.2s ease, color 0.2s ease, opacity 0.4s ease, scale 0.4s ease; }
+.eye { transition: translate 0.6s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.4s ease, background-color 0.2s ease, color 0.2s ease; }
+.controls[data-hidden='true'] .ctl:not(.eye) { opacity: 0; scale: 0.6; pointer-events: none; }
+.controls[data-hidden='true'] .eye { translate: calc(var(--shift) * -2.75rem) 0; opacity: 0.7; }
+.controls[data-hidden='true'] .eye:hover { opacity: 1; }
+
+/* Explore panel: 301x398, rows 54 */
+.explore {
+  position: absolute; z-index: 10; left: var(--gutter); top: 0; bottom: 0; margin-block: auto; height: fit-content; width: 18.8125rem; padding: 2.25rem 1.625rem 2.9375rem;
+  border: 1px solid var(--ui); border-radius: 0.75rem; background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); filter: drop-shadow(0 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
+  transition: translate 0.5s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.4s ease, visibility 0s linear 0s;
+}
+.explore.closed { translate: -130%; opacity: 0; visibility: hidden; pointer-events: none; transition: translate 0.5s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.3s ease, visibility 0s linear 0.5s; }
+.explore .collapse { position: absolute; top: 2rem; right: 1.375rem; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; cursor: pointer; background: none; border: 0; color: var(--ui); }
+.explore .collapse .mask { --m: url('/icons/chevron-left.svg'); width: 0.5625rem; height: 1.0625rem; }
+.explore .collapse:hover, .explore .collapse:focus-visible { color: #fff; outline: none; }
+
+/* edge tab (Figma Rectangle 70: 63x94, left -22) that opens the menu on every screen except 3D elevation */
+/* tab stays anchored at the edge; arrow rotates in place on toggle so the user never has to chase it */
+.menu-tab {
+  position: absolute; z-index: 11; left: -1.375rem; top: 0; bottom: 0; margin-block: auto; width: 3.9375rem; height: 5.875rem; padding: 0 0 0 1.375rem; cursor: pointer;
+  display: grid; place-items: center; border: 1px solid var(--ui); border-radius: 0.75rem; background: rgba(0, 0, 0, 0.5); color: var(--ui);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.menu-tab .mask { --m: url('/icons/chevron-right.svg'); width: 0.5625rem; height: 1.0625rem; transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.4, 1); }
+.menu-tab[data-open='true'] .mask { transform: rotate(180deg); }
+.menu-tab:hover, .menu-tab:focus-visible { background: var(--ui-hover); color: #fff; outline: none; }
+.eyebrow { color: var(--gold-accent); font-size: 0.875rem; line-height: 1.0625rem; text-transform: uppercase; margin: 0 0 1.75rem 0.625rem; }
+.explore ul { list-style: none; position: relative; }
+.explore li { position: relative; z-index: 1; height: 3.375rem; }
+.explore .selector {
+  position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 3.375rem; border: 1px solid var(--gold-line); border-radius: 0.5rem;
+  background: rgba(214, 160, 65, 0.1); translate: 0 calc(var(--i, 0) * 3.375rem);
+  transition: translate 0.6s cubic-bezier(0.45, 0, 0.2, 1);
+}
+.explore a, .explore .item {
+  display: flex; gap: 1.25rem; align-items: center; height: 100%; padding: 0 0.625rem; text-decoration: none; text-transform: uppercase;
+  font-size: 1.125rem; line-height: 1.375rem; color: #fff; outline: none;
+}
+.explore .inactive { cursor: default; }
+.explore .num { min-width: 1.1875rem; font-size: 0.875rem; line-height: 1.0625rem; color: var(--grey); }
+.explore .num.on { color: var(--gold-accent); }  /* text colours never change on hover; only the selector moves */
+
+.drag-hint {
+  position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 5.37%; display: grid; place-items: center; width: 7.5625rem; height: 1.625rem;
+  background: rgba(0, 0, 0, 0.5); border-radius: 0.1875rem; color: #fff; font-size: 0.625rem; line-height: 0.75rem;
+  text-transform: uppercase; pointer-events: none; user-select: none; -webkit-user-select: none; cursor: default;
+}
+
+/* Aerial dock: Aerial|Floor toggle (204x36) sitting on the 402x78 option panel */
+.dock { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 2.3125rem; width: 25.125rem; max-width: 96vw; display: flex; flex-direction: column; align-items: center; }
+.seg { display: flex; width: 12.75rem; height: 2.25rem; margin-bottom: 0.25rem; border: 0; border-radius: 0.25rem; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
+.seg button { flex: 1; cursor: pointer; border: 0.6px solid transparent; border-radius: 0.25rem; background: transparent; color: #fff; font: 300 0.75rem/0.875rem var(--font-sans); text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.seg button[aria-pressed='true'] { background: var(--ui); border-color: #fff; font-weight: 400; }
+.panel {
+  width: 100%; padding: 1.3125rem 1.5rem; border-radius: 1.125rem; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.chips { display: flex; gap: 0.4375rem; }
+.chip {
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5625rem; height: 2.125rem; min-width: 4.0625rem;
+  background: transparent; color: #fff; border: 0.6px solid #fff; border-radius: 0.25rem; padding: 0 0.75rem;
+  font: 300 0.875rem/1.0625rem var(--font-sans); text-transform: uppercase; transition: background-color 0.2s ease;
+}
+.chip svg { width: 1rem; height: 1rem; }
+.chip.floors, .floors .chip { flex: 1; }
+.chip.time { flex: 1; height: 2.25rem; font-size: 0.75rem; line-height: 0.875rem; }
+.chip:hover { background: rgba(255, 255, 255, 0.08); outline: none; }
+.chip[aria-pressed='true'] { background: var(--ui); border-color: var(--ui); font-weight: 400; }
+/* Virtual tour bar (future screen) */
+.tourbar { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 2.5rem; display: flex; align-items: center; gap: 0.75rem; width: fit-content; max-width: 94vw; }
+.ctl.chair { width: 2.9375rem; height: 2.625rem; }
+.mask { display: block; background: currentColor; -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
+.chair-ico { --m: url('/icons/chair.svg'); width: 1.5rem; height: 1.375rem; }
+.arrow { display: grid; place-items: center; width: 1.5rem; height: 2.625rem; padding: 0; cursor: pointer; background: none; border: 0; color: #fff; }
+.arrow .mask { width: 0.5625rem; height: 1.0625rem; }
+.arrow .left { --m: url('/icons/chevron-left.svg'); } .arrow .right { --m: url('/icons/chevron-right.svg'); }
+.arrow:hover, .arrow:focus-visible { color: var(--ui); outline: none; }
+.tabs { display: flex; gap: 0.75rem; overflow-x: auto; scrollbar-width: none; max-width: 40rem; scroll-snap-type: x proximity; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: none; scroll-snap-align: start; min-width: 8.875rem; height: 2.625rem; padding: 0 1.25rem; cursor: pointer; border: 0; border-radius: 0.5rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.77), rgba(0, 0, 0, 0.77)), rgba(197, 162, 98, 0.42); color: #fff;
+  font: 400 1.125rem/1.625rem 'Source Sans 3', var(--font-sans); text-transform: uppercase; white-space: nowrap; transition: background-color 0.2s ease;
+}
+.tab:hover, .tab:focus-visible, .tab[aria-pressed='true'] { background: var(--ui); outline: none; }
+.compass { position: absolute; z-index: 10; right: var(--gutter); bottom: 3.75rem; width: 4.5rem; height: 4.5rem; border-radius: 50%;
+  border: 1px solid var(--ui); background: rgba(0, 0, 0, 0.6); color: var(--ui); font-size: 0.6875rem; }
+.compass [data-dial] { position: absolute; inset: 0; transition: transform 0.1s linear; }
+.compass [data-dial] span { position: absolute; }
+.compass .n { top: 0.25rem; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 400; }
+.compass .s { bottom: 0.25rem; left: 50%; transform: translateX(-50%); }
+.compass .e { right: 0.375rem; top: 50%; transform: translateY(-50%); }
+.compass .w { left: 0.375rem; top: 50%; transform: translateY(-50%); }
+.compass .needle { position: absolute; left: 50%; top: 50%; width: 2px; height: 1.25rem; background: var(--ui); transform: translate(-50%, -100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cta, .cta svg, .ui, .chip, .tab, .explore, .explore .selector, .watermark, .ctl, .eye, .menu-tab, .menu-tab .mask { transition: none; }
+  .cta:hover svg { transform: none; }
+}

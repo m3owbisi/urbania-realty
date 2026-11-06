@@ -1,0 +1,123 @@
+{
+  "name": "60 Perry Cross",
+  "brand": {
+    "projectLogo": "/logos/60-perry-cross.svg",
+    "partnerLogo": "/logos/urbania-group.webp",
+    "watermark": {
+      "label": "The VR Company",
+      "url": "https://thevrcompany.in"
+    },
+    "partnerLogoDark": "/logos/urbania-logo-dark.webp"
+  },
+  "hero": {
+    "headline": "A Symphony Of Leisure",
+    "subtext": "Beginning with one of Bandra’s Most Distinguished Addresses, Every Decision has been made with Remarkable Care",
+    "background": "/images/hero-bg.webp",
+    "cta": {
+      "label": "Experience Now",
+      "href": "/elevation"
+    },
+    "subtextLines": [
+      "Beginning with one of Bandra’s Most Distinguished",
+      "Addresses, Every Decision has been made with",
+      "Remarkable Care"
+    ]
+  },
+  "menu": [
+    {
+      "number": "01",
+      "label": "3D Elevation",
+      "href": "/elevation",
+      "image": "/images/elevation.webp",
+      "active": true
+    },
+    {
+      "number": "02",
+      "label": "Virtual Tour",
+      "href": "/virtual-tour",
+      "image": "/images/amenities.webp",
+      "active": false
+    },
+    {
+      "number": "03",
+      "label": "Floor Plan",
+      "href": "/floor-plan",
+      "image": "/images/elevation.webp",
+      "active": false
+    },
+    {
+      "number": "04",
+      "label": "Aerial View",
+      "href": "/aerial-view",
+      "image": "/images/elevation.webp",
+      "active": true
+    },
+    {
+      "number": "05",
+      "label": "Amenities",
+      "href": "/amenities",
+      "image": "/images/amenities.webp",
+      "active": false
+    }
+  ],
+  "aerial": {
+    "floors": [
+      "6th",
+      "10th",
+      "15th",
+      "19th",
+      "20th"
+    ],
+    "times": [
+      "day",
+      "evening",
+      "night"
+    ],
+    "timeScenes": {
+      "day": "0-133_0578-day-top-e1",
+      "evening": "1-133_0580-evening",
+      "night": "2-133_0591-night-e1"
+    },
+    "floorScenes": {
+      "6th": "3-133_0585-e1",
+      "10th": "4-133_0584-e1",
+      "15th": "5-133_0583-e1",
+      "19th": "6-133_0582-e1",
+      "20th": "7-133_0581-e1"
+    }
+  },
+  "tour": {
+    "background": "/images/amenities.webp",
+    "rooms": [
+      {
+        "id": "living",
+        "label": "Living Room"
+      },
+      {
+        "id": "kitchen",
+        "label": "Kitchen"
+      },
+      {
+        "id": "bedroom1",
+        "label": "Bedroom 1"
+      },
+      {
+        "id": "bedroom2",
+        "label": "Bedroom 2"
+      },
+      {
+        "id": "bedroom3",
+        "label": "Bedroom 3"
+      }
+    ]
+  },
+  "amenities": {
+    "background": "/images/amenities.webp"
+  },
+  "floorPlan": {
+    "background": "/images/hero-bg.webp"
+  },
+  "elevation": {
+    "background": "/images/elevation.webp"
+  }
+}
