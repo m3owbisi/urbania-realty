@@ -1,40 +1,90 @@
 'use client';
 import { useProject } from '@/hooks/useProject';
 
-interface Props { mode?: 'time' | 'floor'; onMode?: (m: 'time' | 'floor') => void; floor: string; time: string; onChange: (v: { floor: string; time: string }) => void; onFloor?: (f: string) => void; onTime?: (t: string) => void }
+interface Props {
+  mode?: 'time' | 'floor';
+  onMode?: (m: 'time' | 'floor') => void;
+  floor: string;
+  time: string;
+  onChange: (v: { floor: string; time: string }) => void;
+  onFloor?: (f: string) => void;
+  onTime?: (t: string) => void;
+}
 
-const s = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
-const icons: Record<string, React.ReactNode> = {
-  day: <svg {...s}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>,
-  evening: <svg {...s}><path d="M7 17a5 5 0 0110 0M12 6V3M3 17h18M5 10l2 2M19 10l-2 2M2 21h20" /></svg>,
-  night: <svg {...s}><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" /></svg>,
+const DayIcon = () => (
+  <svg width="18" height="18" viewBox="53 30 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M65 39C65 40.6569 63.6569 42 62 42C60.3431 42 59 40.6569 59 39C59 37.3431 60.3431 36 62 36C63.6569 36 65 37.3431 65 39Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M62 31.5V33.75M62 44.25V46.5M54.5 39H56.75M67.25 39H69.5M56.675 33.675L58.25 35.25M65.75 42.75L67.325 44.325M56.675 44.325L58.25 42.75M65.75 35.25L67.325 33.675" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const EveningIcon = () => (
+  <svg width="14" height="10" viewBox="161 34 14 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M174.542 43.0794C174.795 43.0796 175 43.2854 175 43.5397C175 43.794 174.795 43.9999 174.542 44H161.458C161.205 44 161 43.7941 161 43.5397C161 43.2854 161.205 43.0794 161.458 43.0794H174.542ZM172.121 41.5659C172.121 40.4667 171.687 39.4126 170.914 38.6353C170.142 37.858 169.093 37.421 168 37.421C166.907 37.421 165.858 37.858 165.086 38.6353C164.313 39.4126 163.878 40.4667 163.878 41.5659C163.878 41.8203 163.673 42.0262 163.42 42.0262C163.167 42.0262 162.963 41.8203 162.963 41.5659C162.963 40.2224 163.493 38.9339 164.438 37.9838C165.382 37.0338 166.664 36.4997 168 36.4996C169.336 36.4996 170.617 37.0338 171.562 37.9838C172.506 38.9339 173.037 40.2223 173.037 41.5659C173.037 41.8202 172.832 42.0261 172.58 42.0262C172.327 42.0262 172.121 41.8203 172.121 41.5659ZM162.181 36.0424C162.359 35.8627 162.649 35.8627 162.828 36.0424L164.071 37.293C164.25 37.4728 164.25 37.7639 164.071 37.9437C163.892 38.1236 163.602 38.1236 163.423 37.9437L162.181 36.6939C162.002 36.5141 162.002 36.2223 162.181 36.0424ZM173.172 36.0424C173.35 35.8625 173.641 35.8625 173.819 36.0424C173.998 36.2223 173.998 36.5141 173.819 36.6939L172.576 37.9437C172.397 38.1236 172.108 38.1236 171.929 37.9437C171.75 37.7639 171.75 37.4728 171.929 37.293L173.172 36.0424ZM167.542 35.6446V34.4603C167.542 34.206 167.747 34.0001 168 34C168.252 34 168.457 34.206 168.457 34.4603L168.458 35.6446C168.458 35.8989 168.253 36.1048 168 36.1049C167.747 36.1047 167.542 35.8988 167.542 35.6446Z" fill="white"/>
+  </svg>
+);
+
+const NightIcon = () => (
+  <svg width="14" height="14" viewBox="288 32 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M292.947 32.1059C292.355 32.3001 291.904 32.511 291.381 32.837C289.549 33.9798 288.34 35.8487 288.062 37.9669C287.773 40.1643 288.51 42.3401 290.077 43.9186C291.632 45.4844 293.84 46.2333 296.026 45.9359C298.007 45.6663 299.798 44.5642 300.915 42.927C301.371 42.2579 301.705 41.5343 301.922 40.746C302.019 40.3961 302.022 40.3436 301.952 40.1894L301.9 40.0743L301.783 40.0147L301.667 39.9552L301.525 39.967L301.383 39.9789L301.2 40.1142C300.769 40.4325 300.492 40.6072 300.158 40.7711C299.383 41.1511 298.714 41.307 297.861 41.3066C296.453 41.306 295.146 40.7651 294.152 39.7711C293.146 38.7651 292.606 37.461 292.609 36.048C292.611 34.8304 292.959 33.7649 293.644 32.8749C293.727 32.7675 293.809 32.6285 293.825 32.5662L293.856 32.4528L293.825 32.35C293.763 32.1415 293.571 31.9951 293.367 32.0001C293.31 32.0016 293.121 32.0492 292.947 32.1059ZM292.099 33.4978C290.9 34.1658 289.905 35.3065 289.396 36.5972C289.105 37.3335 288.974 38.0387 288.973 38.8751C288.97 39.8531 289.17 40.714 289.601 41.5875C289.939 42.2719 290.311 42.7818 290.866 43.3194C292.352 44.7603 294.402 45.3415 296.45 44.9025C297.777 44.6181 299.067 43.8127 299.944 42.7219C300.212 42.3891 300.687 41.65 300.654 41.6174C300.649 41.6116 300.547 41.6496 300.428 41.7019C299.85 41.9569 299.163 42.1419 298.526 42.2145C298.109 42.2621 297.265 42.235 296.847 42.1605C294.117 41.675 292.08 39.5208 291.743 36.762C291.704 36.4463 291.704 35.6582 291.743 35.3203C291.806 34.7725 291.954 34.2015 292.169 33.6795C292.232 33.5247 292.283 33.3982 292.281 33.3983C292.279 33.3985 292.197 33.4433 292.099 33.4978Z" fill="white" fillRule="evenodd" clipRule="evenodd"/>
+  </svg>
+);
+
+const timeIcons: Record<string, React.ReactNode> = {
+  day: <DayIcon />,
+  evening: <EveningIcon />,
+  night: <NightIcon />,
 };
+
 export default function AerialPanel({ mode = 'floor', onMode, floor, time, onChange, onFloor, onTime }: Props) {
   const { aerial } = useProject();
   return (
-    <div className="dock">
+    <div className="dock" role="region" aria-label="Aerial controls">
       <div className="seg" role="group" aria-label="View type">
         {(['time', 'floor'] as const).map((m) => (
-          <button key={m} type="button" aria-pressed={m === mode} onClick={() => onMode?.(m)}>{m === 'time' ? 'Aerial' : 'Floor'}</button>
+          <button key={m} type="button" aria-pressed={m === mode} onClick={() => onMode?.(m)}>
+            {m === 'time' ? 'Aerial' : 'Floor'}
+          </button>
         ))}
       </div>
-      <section className="panel aerial" aria-label={mode === 'time' ? 'Aerial time of day' : 'Floor views'}>
+      <div className="dock-buttons-wrap">
         {mode === 'floor' ? (
-          <div className="chips floors">
+          <div className="chips floors" role="group" aria-label="Floor selection">
             {aerial.floors.map((f) => (
-              <button key={f} type="button" className="chip" aria-pressed={f === floor}
-                onClick={() => { onFloor?.(f); onChange({ floor: f, time }); }}>{f}</button>
+              <button
+                key={f}
+                type="button"
+                className="chip chip-floor"
+                aria-pressed={f === floor}
+                onClick={() => {
+                  onFloor?.(f);
+                  onChange({ floor: f, time });
+                }}
+              >
+                {f}
+              </button>
             ))}
           </div>
         ) : (
-          <div className="chips times">
+          <div className="chips times" role="group" aria-label="Time of day selection">
             {aerial.times.map((t) => (
-              <button key={t} type="button" className="chip time" aria-pressed={t === time}
-                onClick={() => { onTime?.(t); onChange({ floor, time: t }); }}>{icons[t]}<span>{t}</span></button>
+              <button
+                key={t}
+                type="button"
+                className="chip chip-time"
+                aria-pressed={t === time}
+                onClick={() => {
+                  onTime?.(t);
+                  onChange({ floor, time: t });
+                }}
+              >
+                {timeIcons[t]}
+                <span>{t}</span>
+              </button>
             ))}
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }

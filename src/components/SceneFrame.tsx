@@ -30,14 +30,36 @@ export default function SceneFrame({ background, bgNode, filter, panel, children
 
   useEffect(() => {
     setShowFs(!isInstalledPwa(window, document) && canFullscreen(document, isIOS(navigator.userAgent, navigator.maxTouchPoints)));
-    const sync = () => setFs(Boolean(document.fullscreenElement));
+    const getFs = () => Boolean(document.fullscreenElement || (document as unknown as { webkitFullscreenElement?: Element }).webkitFullscreenElement);
+    setFs(getFs());
+    const sync = () => setFs(getFs());
     document.addEventListener('fullscreenchange', sync);
-    return () => document.removeEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+    };
   }, []);
 
   const toggleFs = () => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void document.documentElement.requestFullscreen?.().catch(() => {});
+    const doc = document as unknown as {
+      fullscreenElement?: Element;
+      webkitFullscreenElement?: Element;
+      exitFullscreen?: () => Promise<void>;
+      webkitExitFullscreen?: () => Promise<void>;
+    };
+    const fsEl = doc.fullscreenElement || doc.webkitFullscreenElement;
+    if (fsEl) {
+      if (doc.exitFullscreen) void doc.exitFullscreen();
+      else if (doc.webkitExitFullscreen) void doc.webkitExitFullscreen();
+    } else {
+      const el = document.documentElement as unknown as {
+        requestFullscreen?: () => Promise<void>;
+        webkitRequestFullscreen?: () => Promise<void>;
+      };
+      if (el.requestFullscreen) void el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) void el.webkitRequestFullscreen();
+    }
   };
 
   const drag = (e: React.PointerEvent) => {

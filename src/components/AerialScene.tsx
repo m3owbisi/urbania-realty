@@ -11,11 +11,21 @@ export default function AerialScene() {
   const scene = sceneFor(s);
   return (
     <SceneFrame
-      bgNode={<PanoViewer sceneId={scene.id} persist={scene.persist} lockPitchAxis={scene.lockPitch} />}
+      bgNode={<PanoViewer sceneId={scene.id} persist={scene.persist} lockPitchAxis={scene.lockPitch} isFloor={s.mode === 'floor'} />}
       panel={
-        <><SideMenu active="/aerial-view" /><AerialPanel mode={s.mode} onMode={(mode) => setS((p) => ({ ...p, mode }))} floor={s.floor} time={s.time} onChange={() => {}}
-          onFloor={(floor) => setS({ mode: 'floor', floor, time: 'day' })}
-          onTime={(time) => setS((p) => ({ ...p, mode: 'time', time }))} /></>
-      } />
+        <>
+          <SideMenu active="/aerial-view" />
+          <AerialPanel
+            mode={s.mode}
+            onMode={(mode) => setS((p) => ({ ...p, mode }))}
+            floor={s.floor}
+            time={s.time}
+            onChange={(v) => setS((p) => ({ ...p, ...v }))}
+            onFloor={(floor) => setS((p) => ({ ...p, mode: 'floor', floor }))}
+            onTime={(time) => setS((p) => ({ ...p, mode: 'time', time }))}
+          />
+        </>
+      }
+    />
   );
 }

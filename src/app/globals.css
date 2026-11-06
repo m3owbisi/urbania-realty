@@ -161,24 +161,30 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
   text-transform: uppercase; pointer-events: none; user-select: none; -webkit-user-select: none; cursor: default;
 }
 
-/* Aerial dock: Aerial|Floor toggle (204x36) sitting on the 402x78 option panel */
-.dock { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 2.3125rem; width: 25.125rem; max-width: 96vw; display: flex; flex-direction: column; align-items: center; }
-.seg { display: flex; width: 12.75rem; height: 2.25rem; margin-bottom: 0.25rem; border: 0; border-radius: 0.25rem; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
-.seg button { flex: 1; cursor: pointer; border: 0.6px solid transparent; border-radius: 0.25rem; background: transparent; color: #fff; font: 300 0.75rem/0.875rem var(--font-sans); text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease; }
-.seg button[aria-pressed='true'] { background: var(--ui); border-color: #fff; font-weight: 400; }
-.panel {
-  width: 100%; padding: 1.3125rem 1.5rem; border-radius: 1.125rem; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-}
-.chips { display: flex; gap: 0.4375rem; }
+/* Aerial dock: Aerial|Floor toggle sitting above direct option buttons without background panel */
+.dock { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 21px; width: fit-content; max-width: 96vw; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.seg { display: flex; width: 12.75rem; height: 2.25rem; border: 0.6px solid rgba(255, 255, 255, 0.6); border-radius: 4px; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
+.seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
+.seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
+.dock-buttons-wrap { display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
+.chips { display: flex; align-items: center; justify-content: center; }
+.chips.times { width: 351px; height: 36px; gap: 9px; }
+.chips.floors { width: 353px; height: 34px; gap: 7px; }
 .chip {
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5625rem; height: 2.125rem; min-width: 4.0625rem;
-  background: transparent; color: #fff; border: 0.6px solid #fff; border-radius: 0.25rem; padding: 0 0.75rem;
-  font: 300 0.875rem/1.0625rem var(--font-sans); text-transform: uppercase; transition: background-color 0.2s ease;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.7); color: #fff; border: 0.6px solid #fff; border-radius: 4px;
+  text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
-.chip svg { width: 1rem; height: 1rem; }
-.chip.floors, .floors .chip { flex: 1; }
-.chip.time { flex: 1; height: 2.25rem; font-size: 0.75rem; line-height: 0.875rem; }
-.chip:hover { background: rgba(255, 255, 255, 0.08); outline: none; }
+.chip:hover { background: rgba(255, 255, 255, 0.15); outline: none; }
+.chip-time {
+  width: 111px; height: 36px; gap: 9px; padding: 0;
+  font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif;
+}
+.chip-floor {
+  width: 65px; height: 34px; padding: 0;
+  font: 350 14px/17px 'Gotham', var(--font-sans), sans-serif;
+  text-align: center;
+}
 .chip[aria-pressed='true'] { background: var(--ui); border-color: var(--ui); font-weight: 400; }
 /* Virtual tour bar (future screen) */
 .tourbar { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: 2.5rem; display: flex; align-items: center; gap: 0.75rem; width: fit-content; max-width: 94vw; }

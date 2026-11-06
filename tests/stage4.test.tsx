@@ -154,9 +154,9 @@ describe('pano logic', () => {
     store.set(SAVE_KEY, '{nope');
     expect(loadView(st, 5)).toBeNull();
   });
-  it('floors never reuse the saved view and lock pitch; time panos are free 360 both ways', () => {
+  it('floors sync and persist the saved view; panos are free 360 both ways', () => {
     expect(viewFor(init, { yaw: 9, pitch: 9, fov: 1 }, false)).toEqual(init);
-    expect(sceneFor({ mode: 'floor', floor: '15th', time: 'day' })).toEqual({ id: '5-133_0583-e1', persist: false, lockPitch: true });
+    expect(sceneFor({ mode: 'floor', floor: '15th', time: 'day' })).toEqual({ id: '5-133_0583-e1', persist: true, lockPitch: false });
     expect(sceneFor({ mode: 'time', floor: '15th', time: 'night' })).toEqual({ id: '2-133_0591-night-e1', persist: true, lockPitch: false });
   });
 });
@@ -173,10 +173,10 @@ describe('floor pitch band and initial views', () => {
     const r = clampPitch({ yaw: 9, pitch: 0.05, fov: 2 }, base, 0.56);
     expect(r.fov).toBe(1.2); expect(r.yaw).toBe(9);
   });
-  it('day and night open at the evening view; evening and floors are unchanged', () => {
-    expect(initialViewId('0-133_0578-day-top-e1')).toBe('1-133_0580-evening');
-    expect(initialViewId('2-133_0591-night-e1')).toBe('1-133_0580-evening');
-    expect(initialViewId('1-133_0580-evening')).toBe('1-133_0580-evening');
+  it('day, evening and night open at the day preset view; floors are unchanged', () => {
+    expect(initialViewId('0-133_0578-day-top-e1')).toBe('0-133_0578-day-top-e1');
+    expect(initialViewId('1-133_0580-evening')).toBe('0-133_0578-day-top-e1');
+    expect(initialViewId('2-133_0591-night-e1')).toBe('0-133_0578-day-top-e1');
     expect(initialViewId('7-133_0581-e1')).toBe('7-133_0581-e1');
   });
 });
