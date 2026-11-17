@@ -111,10 +111,10 @@ describe('TourPanel', () => {
 });
 
 describe('Compass', () => {
-  it('shows the designer rose and rotates opposite to the view heading', () => {
+  it('shows fixed N S E W markers and rotates the radar compass towards the view heading', () => {
     const { container } = render(<Compass heading={90} />);
     expect(screen.getByRole('img', { name: /facing 90 degrees/i })).toBeTruthy();
     for (const l of ['N', 'S', 'E', 'W']) expect(document.querySelector('svg')!.innerHTML.includes(l === 'N' ? 'M204.65' : `>${l}<`)).toBe(true);
-    expect((container.querySelector('[data-dial]') as HTMLElement).style.transform).toBe('rotate(-90deg)');
+    expect((container.querySelector('[data-dial]') as HTMLElement).style.transform).toBe('rotate(90deg)');
   });
 });
