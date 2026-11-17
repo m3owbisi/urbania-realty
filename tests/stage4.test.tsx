@@ -14,10 +14,10 @@ afterEach(() => { cleanup(); push.mockClear(); vi.useRealTimers(); });
 const sel = (c: HTMLElement) => (c.querySelector('[data-selector]') as HTMLElement).style.getPropertyValue('--i');
 
 describe('ExplorePanel: moving selector + inactive items', () => {
-  it('live items are links; the other three are inactive and do nothing', () => {
+  it('live items are links; the other two are inactive and do nothing', () => {
     render(<ExplorePanel active="/elevation" />);
-    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/elevation', '/aerial-view', '/renders', '/brochure']);
-    for (const name of [/virtual tour/i, /floor plan/i, /amenities/i]) {
+    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/elevation', '/floor-plan', '/aerial-view', '/renders', '/brochure']);
+    for (const name of [/virtual tour/i, /amenities/i]) {
       const el = screen.getByText(name).closest('[aria-disabled]')!;
       expect(el.getAttribute('aria-disabled')).toBe('true');
       fireEvent.click(el);

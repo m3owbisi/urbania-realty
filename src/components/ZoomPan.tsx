@@ -1,0 +1,102 @@
+'use client';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+const MIN = 1;
+const MAX = 5;
+type T = { s: number; x: number; y: number };
+
+// Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
+export default function ZoomPan({ children, label = 'Zoom' }: { children: React.ReactNode; label?: string }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [t, setT] = useState<T>({ s: 1, x: 0, y: 0 });
+  const pts = useRef(new Map<number, { x: number; y: number }>());
+  const last = useRef<{ d: number; cx: number; cy: number } | null>(null);
+  const moved = useRef(false);
+
+  const clamp = useCallback((n: T): T => {
+    const el = box.current;
+    const s = Math.min(MAX, Math.max(MIN, n.s));
+    if (!el) return { ...n, s };
+    const mx = (el.clientWidth * (s - 1)) / 2;
+    const my = (el.clientHeight * (s - 1)) / 2;
+    return { s, x: Math.min(mx, Math.max(-mx, n.x)), y: Math.min(my, Math.max(-my, n.y)) };
+  }, []);
+
+  // zoom by factor around a point (relative to the box centre) so the point under the cursor stays put
+  const zoomAt = useCallback((f: number, px = 0, py = 0) => {
+    setT((p) => {
+      const s = Math.min(MAX, Math.max(MIN, p.s * f));
+      const k = s / p.s;
+      return clamp({ s, x: px - (px - p.x) * k, y: py - (py - p.y) * k });
+    });
+  }, [clamp]);
+
+  const rel = (e: { clientX: number; clientY: number }) => {
+    const r = box.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 };
+  };
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const wheel = (e: WheelEvent) => { e.preventDefault(); const p = rel(e); zoomAt(Math.exp(-e.deltaY * 0.0015), p.x, p.y); };
+    el.addEventListener('wheel', wheel, { passive: false });
+    return () => el.removeEventListener('wheel', wheel);
+  }, [zoomAt]);
+
+  const down = (e: React.PointerEvent) => {
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    moved.current = false;
+    last.current = null;
+  };
+  const move = (e: React.PointerEvent) => {
+    const m = pts.current;
+    if (!m.has(e.pointerId)) return;
+    const prev = m.get(e.pointerId)!;
+    m.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (m.size === 1) {
+      const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+      if (Math.abs(dx) + Math.abs(dy) > 0 && (e.pointerType !== 'mouse' || e.buttons === 1)) {
+        if (!moved.current) { try { box.current?.setPointerCapture(e.pointerId); } catch { /* ignore */ } }
+        moved.current = true;
+        setT((p) => (p.s > 1 ? clamp({ ...p, x: p.x + dx, y: p.y + dy }) : p));
+      }
+    } else if (m.size === 2) {
+      const [a, b] = [...m.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      const c = rel({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+      if (last.current) {
+        const l = last.current;
+        const f = d / l.d;
+        setT((p) => {
+          const s = Math.min(MAX, Math.max(MIN, p.s * f));
+          const k = s / p.s;
+          return clamp({ s, x: c.x - (l.cx - p.x) * k, y: c.y - (l.cy - p.y) * k });
+        });
+      }
+      last.current = { d, cx: c.x, cy: c.y };
+      moved.current = true;
+    }
+  };
+  const up = (e: React.PointerEvent) => { pts.current.delete(e.pointerId); last.current = null; };
+
+  return (
+    <div className="zoom" role="group" aria-label={label}>
+      <div ref={box} className={t.s > 1 ? 'zoom-box zoomed' : 'zoom-box'} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+        onDoubleClick={(e) => { if (t.s > 1) setT({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
+        <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>
+      </div>
+      <div className="zoom-ctl" role="group" aria-label="Zoom controls">
+        <button type="button" className="ctl" aria-label="Zoom in" disabled={t.s >= MAX} onClick={() => zoomAt(1.6)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        <button type="button" className="ctl" aria-label="Zoom out" disabled={t.s <= MIN} onClick={() => zoomAt(1 / 1.6)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M5 12h14" /></svg>
+        </button>
+        <button type="button" className="ctl" aria-label="Reset zoom" disabled={t.s === 1} onClick={() => setT({ s: 1, x: 0, y: 0 })}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        </button>
+      </div>
+    </div>
+  );
+}

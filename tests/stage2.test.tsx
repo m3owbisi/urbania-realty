@@ -17,7 +17,7 @@ describe('menu data', () => {
   });
   it('only elevation and aerial view are live for now; the rest stay listed but inactive', () => {
     expect(Object.fromEntries(project.menu.map((m) => [m.href, m.active]))).toEqual({
-      '/elevation': true, '/virtual-tour': false, '/floor-plan': false, '/aerial-view': true, '/amenities': false,
+      '/elevation': true, '/virtual-tour': false, '/floor-plan': true, '/aerial-view': true, '/amenities': false,
       '/renders': true, '/brochure': true });
   });
   it('orders tour rooms like an architect walks a flat: living, kitchen, then bedrooms', () => {

@@ -14,6 +14,10 @@ export interface Project {
   amenities: { background: string };
   renders: { items: { id: string; label: string; src: string; portrait?: boolean }[] };
   brochure: { src: string };
-  floorPlan: { background: string };
+  floorPlan: { background: string; tabs: FloorTab[] };
   elevation: { background: string };
 }
+
+export interface FloorHotspot { id: string; label: string; x: number; y: number; src: string }
+export interface FloorPlan { id: string; label: string; src: string; hotspots: FloorHotspot[] }
+export interface FloorTab { id: string; label: string; plans: FloorPlan[] }

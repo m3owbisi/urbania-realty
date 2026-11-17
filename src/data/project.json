@@ -43,7 +43,7 @@
       "label": "Floor Plan",
       "href": "/floor-plan",
       "image": "/images/elevation.webp",
-      "active": false
+      "active": true
     },
     {
       "number": "04",
@@ -130,7 +130,121 @@
     "background": "/images/amenities.webp"
   },
   "floorPlan": {
-    "background": "/images/hero-bg.webp"
+    "background": "/images/elevation.webp",
+    "tabs": [
+      {
+        "id": "typical",
+        "label": "Typical",
+        "plans": [
+          {
+            "id": "type-1",
+            "label": "Type 1",
+            "src": "/floorplans/typical-1.webp",
+            "hotspots": [
+              {
+                "id": "01",
+                "label": "Unit 01 · 1842 sq.ft.",
+                "x": 38.28,
+                "y": 73.15,
+                "src": "/floorplans/unit-1842.webp"
+              },
+              {
+                "id": "02",
+                "label": "Unit 02 · 1862 sq.ft.",
+                "x": 38.28,
+                "y": 27.27,
+                "src": "/floorplans/unit-1862.webp"
+              },
+              {
+                "id": "03",
+                "label": "Unit 03 · 1497 sq.ft.",
+                "x": 61.88,
+                "y": 27.27,
+                "src": "/floorplans/unit-1497.webp"
+              },
+              {
+                "id": "04",
+                "label": "Unit 04 · 1473 sq.ft.",
+                "x": 61.88,
+                "y": 73.15,
+                "src": "/floorplans/unit-1473.webp"
+              }
+            ]
+          },
+          {
+            "id": "type-2",
+            "label": "Type 2",
+            "src": "/floorplans/typical-2.webp",
+            "hotspots": [
+              {
+                "id": "01",
+                "label": "Unit 01 · 1806 sq.ft.",
+                "x": 38.28,
+                "y": 73.15,
+                "src": "/floorplans/unit-1806.webp"
+              },
+              {
+                "id": "02",
+                "label": "Unit 02 · 1826 sq.ft.",
+                "x": 38.28,
+                "y": 27.27,
+                "src": "/floorplans/unit-1826.webp"
+              },
+              {
+                "id": "03",
+                "label": "Unit 03 · 1460 sq.ft.",
+                "x": 61.88,
+                "y": 27.27,
+                "src": "/floorplans/unit-1460.webp"
+              },
+              {
+                "id": "04",
+                "label": "Unit 04 · 1437 sq.ft.",
+                "x": 61.88,
+                "y": 73.15,
+                "src": "/floorplans/unit-1437.webp"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ground",
+        "label": "Ground",
+        "plans": [
+          {
+            "id": "ground",
+            "label": "Ground",
+            "src": "/floorplans/ground.webp",
+            "hotspots": []
+          }
+        ]
+      },
+      {
+        "id": "podium",
+        "label": "Podium",
+        "plans": [
+          {
+            "id": "podium",
+            "label": "Podium",
+            "src": "/floorplans/podium.webp",
+            "hotspots": []
+          }
+        ]
+      },
+      {
+        "id": "terrace",
+        "label": "Terrace",
+        "plans": [
+          {
+            "id": "terrace",
+            "label": "Terrace",
+            "src": "/floorplans/terrace.webp",
+            "hotspots": []
+          }
+        ]
+      }
+    ]
   },
   "elevation": {
     "background": "/images/elevation.webp"
