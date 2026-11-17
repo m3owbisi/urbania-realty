@@ -58,21 +58,26 @@
       "href": "/amenities",
       "image": "/images/amenities.webp",
       "active": false
+    },
+    {
+      "number": "06",
+      "label": "Renders",
+      "href": "/renders",
+      "image": "/images/elevation.webp",
+      "active": true
+    },
+    {
+      "number": "07",
+      "label": "Brochure",
+      "href": "/brochure/60-perry-cross.pdf",
+      "image": "/images/elevation.webp",
+      "active": true,
+      "external": true
     }
   ],
   "aerial": {
-    "floors": [
-      "6th",
-      "10th",
-      "15th",
-      "19th",
-      "20th"
-    ],
-    "times": [
-      "day",
-      "evening",
-      "night"
-    ],
+    "floors": ["6th", "10th", "15th", "19th", "20th"],
+    "times": ["day", "evening", "night"],
     "timeScenes": {
       "day": "0-133_0578-day-top-e1",
       "evening": "1-133_0580-evening",
@@ -84,7 +89,8 @@
       "15th": "5-133_0583-e1",
       "19th": "6-133_0582-e1",
       "20th": "7-133_0581-e1"
-    }
+    },
+    "northBearing": 0
   },
   "tour": {
     "background": "/images/amenities.webp",
@@ -119,5 +125,24 @@
   },
   "elevation": {
     "background": "/images/elevation.webp"
+  },
+  "renders": {
+    "items": [
+      {
+        "id": "reception",
+        "label": "Reception",
+        "src": "/renders/reception.webp"
+      },
+      {
+        "id": "gym-1",
+        "label": "Gym 1",
+        "src": "/renders/gym-1.webp"
+      },
+      {
+        "id": "gym-2",
+        "label": "Gym 2",
+        "src": "/renders/gym-2.webp"
+      }
+    ]
   }
 }

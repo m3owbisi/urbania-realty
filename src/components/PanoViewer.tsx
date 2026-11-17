@@ -1,14 +1,23 @@
-'use client';
-import { useEffect, useRef } from 'react';
-import panos from '@/data/panos.json';
-import project from '@/data/project.json';
-import { getStorage, loadView, saveView, viewFor, clampPitch, initialViewId, type View } from '@/lib/pano';
+"use client";
+import { useEffect, useRef } from "react";
+import panos from "@/data/panos.json";
+import project from "@/data/project.json";
+import {
+  getStorage,
+  loadView,
+  saveView,
+  viewFor,
+  clampPitch,
+  initialViewId,
+  type View,
+} from "@/lib/pano";
 
 interface Props {
   sceneId: string;
   persist?: boolean;
   lockPitchAxis?: boolean;
   isFloor?: boolean;
+  onYaw?: (rad: number) => void;
 }
 
 type Api = { show: (id: string) => void; destroy: () => void };
@@ -19,13 +28,25 @@ type PV = {
   setYaw(v: number): void;
   setPitch(v: number): void;
   setFov(v: number): void;
-  screenToCoordinates?: (coords: { x: number; y: number }, result?: { yaw: number; pitch: number }) => { yaw: number; pitch: number };
+  screenToCoordinates?: (
+    coords: { x: number; y: number },
+    result?: { yaw: number; pitch: number },
+  ) => { yaw: number; pitch: number };
   addEventListener(n: string, f: () => void): void;
   removeEventListener(n: string, f: () => void): void;
 };
 
-export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
+export default function PanoViewer({
+  sceneId,
+  isFloor: isFloorProp,
+  onYaw,
+}: Props) {
   const host = useRef<HTMLDivElement>(null);
+  // The viewer effect runs once; refs keep it reading the latest props (a stale isFloor kept Aerial locked to floor limits).
+  const floorRef = useRef(isFloorProp);
+  floorRef.current = isFloorProp;
+  const yawCb = useRef(onYaw);
+  yawCb.current = onYaw;
   const api = useRef<Api | null>(null);
   const currentView = useRef<View | null>(null);
 
@@ -34,22 +55,34 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
     let off = () => {};
 
     (async () => {
-      const mod = await import('marzipano');
+      const mod = await import("marzipano");
       const M = (mod.default ?? mod) as {
-        Viewer: new (el: HTMLElement, opts?: unknown) => {
+        Viewer: new (
+          el: HTMLElement,
+          opts?: unknown,
+        ) => {
           controls: () => { disable: () => void };
-          createScene: (opts: unknown) => { switchTo: (opts?: { transitionDuration?: number }) => void };
+          createScene: (opts: unknown) => {
+            switchTo: (opts?: { transitionDuration?: number }) => void;
+          };
           destroyScene: (s: unknown) => void;
           destroy: () => void;
         };
         ImageUrlSource: {
-          fromString: (url: string, opts?: { cubeMapPreviewUrl?: string }) => unknown;
+          fromString: (
+            url: string,
+            opts?: { cubeMapPreviewUrl?: string },
+          ) => unknown;
         };
         CubeGeometry: new (levels: unknown) => unknown;
         RectilinearView: {
           new (params: View, limiter: unknown): PV;
           limit: {
-            traditional: (faceSize: number, minFov: number, maxFov: number) => unknown;
+            traditional: (
+              faceSize: number,
+              minFov: number,
+              maxFov: number,
+            ) => unknown;
           };
         };
       };
@@ -57,33 +90,49 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
       const el = host.current;
       if (dead || !el) return;
 
-      el.style.touchAction = 'none';
+      el.style.touchAction = "none";
       const viewer = new M.Viewer(el);
       viewer.controls().disable();
 
-      let current: { scene: unknown; view: PV; isFloor: boolean; stop: () => void } | null = null;
+      let current: {
+        scene: unknown;
+        view: PV;
+        isFloor: boolean;
+        stop: () => void;
+      } | null = null;
 
       const show = (id: string) => {
-        const isFloor = isFloorProp ?? Object.values(project.aerial.floorScenes).includes(id);
+        const isFloor =
+          floorRef.current ??
+          Object.values(project.aerial.floorScenes).includes(id);
         const initId = initialViewId(id);
-        const init = (panos.scenes[initId as keyof typeof panos.scenes] as View | undefined) ?? {
+        const init = (panos.scenes[initId as keyof typeof panos.scenes] as
+          | View
+          | undefined) ?? {
           yaw: 0,
           pitch: 0,
           fov: 1.5707963267948966,
         };
 
         const st = getStorage();
-        const activeOrSaved = currentView.current ?? (st ? loadView(st, Date.now()) : null);
+        const activeOrSaved =
+          currentView.current ?? (st ? loadView(st, Date.now()) : null);
         let start = viewFor(init, activeOrSaved, true);
 
-        const aspect = el.clientHeight && el.clientWidth ? el.clientHeight / el.clientWidth : 0.5625;
+        const aspect =
+          el.clientHeight && el.clientWidth
+            ? el.clientHeight / el.clientWidth
+            : 0.5625;
         if (isFloor) {
           start = clampPitch(start, init, aspect);
         }
 
-        const source = M.ImageUrlSource.fromString(`/panos/${id}/{z}/{f}/{y}/{x}.webp`, {
-          cubeMapPreviewUrl: `/panos/${id}/preview.webp`,
-        });
+        const source = M.ImageUrlSource.fromString(
+          `/panos/${id}/{z}/{f}/{y}/{x}.webp`,
+          {
+            cubeMapPreviewUrl: `/panos/${id}/preview.webp`,
+          },
+        );
         const geometry = new M.CubeGeometry(panos.levels);
 
         let limiter: unknown;
@@ -91,12 +140,25 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
           limiter = M.RectilinearView.limit.traditional(
             panos.faceSize,
             (100 * Math.PI) / 180,
-            (120 * Math.PI) / 180
+            (120 * Math.PI) / 180,
           );
         } else {
-          limiter = (params: { yaw: number; pitch: number; fov: number; width?: number; height?: number }) => {
-            const asp = params.height && params.width ? params.height / params.width : aspect;
-            const clamped = clampPitch({ yaw: params.yaw, pitch: params.pitch, fov: params.fov }, init, asp);
+          limiter = (params: {
+            yaw: number;
+            pitch: number;
+            fov: number;
+            width?: number;
+            height?: number;
+          }) => {
+            const asp =
+              params.height && params.width
+                ? params.height / params.width
+                : aspect;
+            const clamped = clampPitch(
+              { yaw: params.yaw, pitch: params.pitch, fov: params.fov },
+              init,
+              asp,
+            );
             params.fov = Math.max(0.35, clamped.fov);
             params.pitch = clamped.pitch;
             return params;
@@ -104,11 +166,21 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         }
 
         const view = new M.RectilinearView(start, limiter);
-        const scene = viewer.createScene({ source, geometry, view, pinFirstLevel: true });
+        const scene = viewer.createScene({
+          source,
+          geometry,
+          view,
+          pinFirstLevel: true,
+        });
 
         let t: ReturnType<typeof setTimeout> | undefined;
         const onChange = () => {
-          currentView.current = { yaw: view.yaw(), pitch: view.pitch(), fov: view.fov() };
+          currentView.current = {
+            yaw: view.yaw(),
+            pitch: view.pitch(),
+            fov: view.fov(),
+          };
+          yawCb.current?.(view.yaw());
           clearTimeout(t);
           t = setTimeout(() => {
             const s = getStorage();
@@ -117,7 +189,8 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
             }
           }, 100);
         };
-        view.addEventListener('change', onChange);
+        view.addEventListener("change", onChange);
+        yawCb.current?.(start.yaw);
 
         const prev = current;
         scene.switchTo({ transitionDuration: 0 });
@@ -127,7 +200,7 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
           isFloor,
           stop: () => {
             clearTimeout(t);
-            view.removeEventListener('change', onChange);
+            view.removeEventListener("change", onChange);
           },
         };
         if (prev) {
@@ -146,7 +219,12 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
       let lastMoveTime = 0;
       let lastDist = 0;
 
-      const rotate = (clientX: number, clientY: number, prevX: number, prevY: number) => {
+      const rotate = (
+        clientX: number,
+        clientY: number,
+        prevX: number,
+        prevY: number,
+      ) => {
         const c = current;
         const v = c?.view;
         if (!v || !el.clientHeight || !el.clientWidth) return;
@@ -156,13 +234,18 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         let dpitch = 0;
         let computed = false;
 
-        if (typeof v.screenToCoordinates === 'function') {
+        if (typeof v.screenToCoordinates === "function") {
           try {
             const p1 = { x: prevX - rect.left, y: prevY - rect.top };
             const p2 = { x: clientX - rect.left, y: clientY - rect.top };
             const c1 = v.screenToCoordinates(p1);
             const c2 = v.screenToCoordinates(p2);
-            if (c1 && c2 && Number.isFinite(c1.yaw) && Number.isFinite(c2.yaw)) {
+            if (
+              c1 &&
+              c2 &&
+              Number.isFinite(c1.yaw) &&
+              Number.isFinite(c2.yaw)
+            ) {
               dyaw = c1.yaw - c2.yaw;
               while (dyaw > Math.PI) dyaw -= 2 * Math.PI;
               while (dyaw < -Math.PI) dyaw += 2 * Math.PI;
@@ -195,7 +278,11 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
             v.setPitch(base.pitch);
           } else {
             const targetPitch = v.pitch() + dpitch;
-            const clamped = clampPitch({ yaw: v.yaw(), pitch: targetPitch, fov: curFov }, base, aspect);
+            const clamped = clampPitch(
+              { yaw: v.yaw(), pitch: targetPitch, fov: curFov },
+              base,
+              aspect,
+            );
             v.setPitch(clamped.pitch);
           }
         }
@@ -214,7 +301,11 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         if (c.isFloor) {
           const base = { yaw: 0, pitch: 0, fov: baseFov };
           const aspect = el.clientHeight / el.clientWidth;
-          const clamped = clampPitch({ yaw: v.yaw(), pitch: v.pitch(), fov: nextFov }, base, aspect);
+          const clamped = clampPitch(
+            { yaw: v.yaw(), pitch: v.pitch(), fov: nextFov },
+            base,
+            aspect,
+          );
           v.setPitch(clamped.pitch);
         }
       };
@@ -241,20 +332,25 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         } else if (v.fov() < 1.5707963267948966 - 0.005) {
           const base = { yaw: 0, pitch: 0, fov: 1.5707963267948966 };
           const aspect = el.clientHeight / el.clientWidth;
-          const clamped = clampPitch({ yaw: v.yaw(), pitch: v.pitch() + dy * k, fov: v.fov() }, base, aspect);
+          const clamped = clampPitch(
+            { yaw: v.yaw(), pitch: v.pitch() + dy * k, fov: v.fov() },
+            base,
+            aspect,
+          );
           v.setPitch(clamped.pitch);
         }
         const friction = Math.pow(0.88, dt / 16);
         vel = { x: vel.x * friction, y: vel.y * friction };
-        raf = Math.hypot(vel.x, vel.y) > 0.005 ? requestAnimationFrame(glide) : 0;
+        raf =
+          Math.hypot(vel.x, vel.y) > 0.005 ? requestAnimationFrame(glide) : 0;
       };
 
       const down = (e: PointerEvent) => {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.pointerType === "mouse" && e.button !== 0) return;
         cancelAnimationFrame(raf);
         raf = 0;
         vel = { x: 0, y: 0 };
-        isPen = e.pointerType === 'pen';
+        isPen = e.pointerType === "pen";
         ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
         if (ptrs.size === 2) {
           lastDist = dist();
@@ -270,7 +366,10 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         if (!p) return;
 
         // Ignore hover movement when pen or mouse is not actively pressed
-        if ((e.pointerType === 'mouse' || e.pointerType === 'pen') && e.buttons === 0) {
+        if (
+          (e.pointerType === "mouse" || e.pointerType === "pen") &&
+          e.buttons === 0
+        ) {
           up(e);
           return;
         }
@@ -297,7 +396,7 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         rotate(e.clientX, e.clientY, p.x, p.y);
         ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-        if (e.pointerType === 'touch' && !isPen) {
+        if (e.pointerType === "touch" && !isPen) {
           vel = {
             x: 0.7 * vel.x + 0.3 * (dx / dt),
             y: 0.7 * vel.y + 0.3 * (dy / dt),
@@ -314,7 +413,7 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
           el.releasePointerCapture(e.pointerId);
         } catch {}
         const now = performance.now();
-        if (isPen || e.pointerType !== 'touch' || now - lastMoveTime > 50) {
+        if (isPen || e.pointerType !== "touch" || now - lastMoveTime > 50) {
           vel = { x: 0, y: 0 };
         } else if (had && ptrs.size === 0 && Math.hypot(vel.x, vel.y) > 0.08) {
           lastMoveTime = now;
@@ -327,23 +426,23 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
         zoom(Math.exp(e.deltaY * 0.001));
       };
 
-      el.addEventListener('pointerdown', down);
-      el.addEventListener('pointermove', move);
-      el.addEventListener('pointerup', up);
-      el.addEventListener('pointercancel', up);
-      el.addEventListener('lostpointercapture', up);
-      el.addEventListener('wheel', wheel, { passive: false });
-      window.addEventListener('pointerup', up);
+      el.addEventListener("pointerdown", down);
+      el.addEventListener("pointermove", move);
+      el.addEventListener("pointerup", up);
+      el.addEventListener("pointercancel", up);
+      el.addEventListener("lostpointercapture", up);
+      el.addEventListener("wheel", wheel, { passive: false });
+      window.addEventListener("pointerup", up);
 
       off = () => {
         cancelAnimationFrame(raf);
-        el.removeEventListener('pointerdown', down);
-        el.removeEventListener('pointermove', move);
-        el.removeEventListener('pointerup', up);
-        el.removeEventListener('pointercancel', up);
-        el.removeEventListener('lostpointercapture', up);
-        el.removeEventListener('wheel', wheel);
-        window.removeEventListener('pointerup', up);
+        el.removeEventListener("pointerdown", down);
+        el.removeEventListener("pointermove", move);
+        el.removeEventListener("pointerup", up);
+        el.removeEventListener("pointercancel", up);
+        el.removeEventListener("lostpointercapture", up);
+        el.removeEventListener("wheel", wheel);
+        window.removeEventListener("pointerup", up);
       };
 
       api.current = { show, destroy: () => viewer.destroy() };
@@ -362,5 +461,12 @@ export default function PanoViewer({ sceneId, isFloor: isFloorProp }: Props) {
     api.current?.show(sceneId);
   }, [sceneId]);
 
-  return <div ref={host} className="pano" role="application" aria-label="360 degree aerial view. Drag to look around." />;
+  return (
+    <div
+      ref={host}
+      className="pano"
+      role="application"
+      aria-label="360 degree aerial view. Drag to look around."
+    />
+  );
 }
