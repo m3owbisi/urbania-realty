@@ -18,7 +18,7 @@ export function useSceneIntro(scope: RefObject<HTMLElement | null>) {
         .from('.explore:not(.closed) li', { opacity: 0, x: -16, duration: 0.5, stagger: 0.07 }, '<0.2')
         .from('.panel, .tourbar', { opacity: 0, y: 20, duration: 0.7 }, '<0.1')
         .from('.controls .ctl', { opacity: 0, y: 10, duration: 0.4, stagger: 0.06 }, '<0.2')
-        .from('.drag-hint, .compass', { opacity: 0, duration: 0.6 }, '<');
+        .from('.drag-hint, .radar', { opacity: 0, duration: 0.6 }, '<');
     }, el);
     return () => ctx.revert();
   }, [scope]);

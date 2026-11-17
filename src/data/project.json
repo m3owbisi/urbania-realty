@@ -69,15 +69,24 @@
     {
       "number": "07",
       "label": "Brochure",
-      "href": "/brochure/60-perry-cross.pdf",
+      "href": "/brochure",
       "image": "/images/elevation.webp",
-      "active": true,
-      "external": true
+      "active": true
     }
   ],
   "aerial": {
-    "floors": ["6th", "10th", "15th", "19th", "20th"],
-    "times": ["day", "evening", "night"],
+    "floors": [
+      "6th",
+      "10th",
+      "15th",
+      "19th",
+      "20th"
+    ],
+    "times": [
+      "day",
+      "evening",
+      "night"
+    ],
     "timeScenes": {
       "day": "0-133_0578-day-top-e1",
       "evening": "1-133_0580-evening",
@@ -131,7 +140,23 @@
       {
         "id": "reception",
         "label": "Reception",
-        "src": "/renders/reception.webp"
+        "src": "/renders/reception.webp",
+        "portrait": true
+      },
+      {
+        "id": "terrace",
+        "label": "Terrace",
+        "src": "/renders/terrace.webp"
+      },
+      {
+        "id": "banquet-1",
+        "label": "Banquet 1",
+        "src": "/renders/banquet-1.webp"
+      },
+      {
+        "id": "banquet-2",
+        "label": "Banquet 2",
+        "src": "/renders/banquet-2.webp"
       },
       {
         "id": "gym-1",
@@ -144,5 +169,8 @@
         "src": "/renders/gym-2.webp"
       }
     ]
+  },
+  "brochure": {
+    "src": "/brochure/60-perry-cross.pdf"
   }
 }
