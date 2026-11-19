@@ -169,7 +169,7 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
 .seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
 .dock-buttons-wrap { position: relative; display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
-.dock-buttons-wrap > .seg { position: absolute; right: calc(100% + 12px); top: 50%; translate: 0 -50%; height: 34px; }
+.dock-buttons-wrap > .seg { position: absolute; right: calc(100% + 2rem); top: 50%; translate: 0 -50%; height: 34px; }
 .chips { display: flex; align-items: center; justify-content: center; }
 .chips.times { width: 351px; height: 36px; gap: 9px; }
 .chips.floors { width: 353px; height: 34px; gap: 7px; }
