@@ -168,8 +168,8 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .seg { display: flex; width: 12.75rem; height: 2.25rem; border: 0.6px solid rgba(255, 255, 255, 0.6); border-radius: 4px; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
 .seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
 .seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
-.dock-buttons-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; height: 36px; width: fit-content; }
-.dock-buttons-wrap > .seg { flex: none; height: 34px; } /* Type 1/2 sits left of Typical on the same line as the tabs */
+.dock-buttons-wrap { position: relative; display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
+.dock-buttons-wrap > .seg { position: absolute; right: calc(100% + 12px); top: 50%; translate: 0 -50%; height: 34px; }
 .chips { display: flex; align-items: center; justify-content: center; }
 .chips.times { width: 351px; height: 36px; gap: 9px; }
 .chips.floors { width: 353px; height: 34px; gap: 7px; }

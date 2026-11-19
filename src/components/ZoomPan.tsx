@@ -69,7 +69,12 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    const wheel = (e: WheelEvent) => { e.preventDefault(); const p = rel(e); zoomAt(Math.exp(-e.deltaY * 0.0015), p.x, p.y); };
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const p = rel(e);
+      // trackpad pinch arrives as ctrl+wheel with tiny deltas, so it needs a bigger gain than a mouse wheel.
+      zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), p.x, p.y);
+    };
     el.addEventListener('wheel', wheel, { passive: false });
     return () => el.removeEventListener('wheel', wheel);
   }, [zoomAt]);
