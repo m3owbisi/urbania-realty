@@ -41,9 +41,9 @@ describe('ControlBar', () => {
     fireEvent.click(screen.getByRole('button', { name: /hide interface/i }));
     expect(fn).toHaveBeenCalledTimes(1);
   });
-  it('home jumps back to the Experience Now homescreen', () => {
+  it('home jumps to the 3D elevation screen', () => {
     render(<ControlBar showFullscreen uiHidden={false} onToggleUI={() => {}} />);
-    expect(screen.getByRole('link', { name: /home/i }).getAttribute('href')).toBe('/');
+    expect(screen.getByRole('link', { name: /home/i }).getAttribute('href')).toBe('/elevation');
   });
   it('can hide home (elevation screen has none in Figma)', () => {
     render(<ControlBar showHome={false} showFullscreen uiHidden={false} onToggleUI={() => {}} />);

@@ -18,9 +18,10 @@ interface Props {
   showHome?: boolean;
   shade?: boolean | 'left';
   bgPosition?: string;
+  hiddenView?: React.ReactNode; // stays visible while the interface is hidden
 }
 
-export default function SceneFrame({ background, bgNode, filter, panel, children, onBackgroundDrag, bgPosition, showHome = true, shade = false }: Props) {
+export default function SceneFrame({ background, bgNode, filter, panel, children, onBackgroundDrag, bgPosition, hiddenView, showHome = true, shade = false }: Props) {
   const [uiHidden, setUiHidden] = useState(false);
   const [fs, setFs] = useState(false);
   const [showFs, setShowFs] = useState(false);
@@ -79,6 +80,7 @@ export default function SceneFrame({ background, bgNode, filter, panel, children
         {children}
         <Watermark />
       </div>
+      {uiHidden && hiddenView}
       <ControlBar showHome={showHome} showFullscreen={showFs} isFullscreen={fs} onToggleFullscreen={toggleFs}
         uiHidden={uiHidden} onToggleUI={() => setUiHidden((v) => !v)} />
       <RotateOverlay visible={needsRotate} />

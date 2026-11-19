@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { canFullscreen, isIOS } from '@/lib/device';
 
 const MIN = 1;
 const MAX = 5;
@@ -8,6 +9,9 @@ type T = { s: number; x: number; y: number };
 // Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
 export default function ZoomPan({ children, label = 'Zoom' }: { children: React.ReactNode; label?: string }) {
   const box = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [fs, setFs] = useState(false);
+  const [canFs, setCanFs] = useState(false);
   const [t, setT] = useState<T>({ s: 1, x: 0, y: 0 });
   const pts = useRef(new Map<number, { x: number; y: number }>());
   const last = useRef<{ d: number; cx: number; cy: number } | null>(null);
@@ -35,6 +39,13 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
     const r = box.current!.getBoundingClientRect();
     return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 };
   };
+
+  useEffect(() => {
+    setCanFs(canFullscreen(document, isIOS(navigator.userAgent, navigator.maxTouchPoints)));
+    const sync = () => { setFs(document.fullscreenElement === root.current); setT({ s: 1, x: 0, y: 0 }); }; // box size changes, so start fresh
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
 
   useEffect(() => {
     const el = box.current;
@@ -81,11 +92,16 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   const up = (e: React.PointerEvent) => { pts.current.delete(e.pointerId); last.current = null; };
 
   return (
-    <div className="zoom" role="group" aria-label={label}>
+    <div ref={root} className="zoom" role="group" aria-label={label}>
       <div ref={box} className={t.s > 1 ? 'zoom-box zoomed' : 'zoom-box'} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onDoubleClick={(e) => { if (t.s > 1) setT({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
         <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>
       </div>
+      {fs && (
+        <button type="button" className="ctl zoom-close" aria-label="Exit fullscreen" onClick={() => void document.exitFullscreen()}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      )}
       <div className="zoom-ctl" role="group" aria-label="Zoom controls">
         <button type="button" className="ctl" aria-label="Zoom in" disabled={t.s >= MAX} onClick={() => zoomAt(1.6)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
@@ -93,9 +109,11 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
         <button type="button" className="ctl" aria-label="Zoom out" disabled={t.s <= MIN} onClick={() => zoomAt(1 / 1.6)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M5 12h14" /></svg>
         </button>
-        <button type="button" className="ctl" aria-label="Reset zoom" disabled={t.s === 1} onClick={() => setT({ s: 1, x: 0, y: 0 })}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
-        </button>
+        {canFs && !fs && (
+          <button type="button" className="ctl zoom-fs" aria-label="Enter fullscreen" onClick={() => void root.current?.requestFullscreen().catch(() => {})}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+          </button>
+        )}
       </div>
     </div>
   );

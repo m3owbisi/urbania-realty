@@ -19,7 +19,7 @@ export default function ControlBar({ showFullscreen, uiHidden, onToggleUI, showH
   return (
     <nav className="controls" aria-label="Viewer controls" data-hidden={uiHidden}>
       {showHome && (
-        <Link href="/" className="ctl" aria-label="Home" {...gone}>
+        <Link href="/elevation" className="ctl" aria-label="Home" {...gone}>
           <svg {...icon}><path d="M4 11l8-7 8 7M6 10v9h12v-9" /></svg>
         </Link>
       )}

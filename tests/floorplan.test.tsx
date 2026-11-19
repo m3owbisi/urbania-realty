@@ -18,11 +18,11 @@ describe('floor plans', () => {
     expect(screen.queryByRole('button', { name: 'Type 1' })).toBeNull();
     expect(screen.queryAllByRole('button', { name: /^Unit/ })).toHaveLength(0);
   });
-  it('hotspot opens the unit plan; close returns to the typical plan', () => {
+  it('hotspot opens the unit plan; Escape returns to the typical plan', () => {
     render(<FloorPlanScene />);
     fireEvent.click(screen.getByRole('button', { name: /Unit 02 · 1862/ }));
     expect(screen.getByAltText(/Unit 02 · 1862 sq.ft. floor plan/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.getAllByRole('button', { name: /^Unit 0\d/ })).toHaveLength(4);
   });
 });

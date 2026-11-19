@@ -24,8 +24,26 @@ export default function FloorPlanScene() {
 
   const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
 
+  const zoomEl = unit ? (
+    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`}>
+      <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
+    </ZoomPan>
+  ) : (
+    <ZoomPan key={plan.id} label={`${tab.label} floor plan`}>
+      <img className="fp-img" src={plan.src} alt={`${tab.label} ${plan.label} floor plan`} draggable={false} />
+      {plan.hotspots.map((h) => (
+        <button key={h.id} type="button" className="hotspot" style={{ left: `${h.x}%`, top: `${h.y}%` }}
+          aria-label={h.label} onClick={() => setUnit(h)} onPointerDown={(e) => e.stopPropagation()}>
+          <span className="hotspot-dot" aria-hidden="true" />
+          <span className="hotspot-label">{h.label}</span>
+        </button>
+      ))}
+    </ZoomPan>
+  );
+
   return (
     <SceneFrame
+      hiddenView={<div className="fp-full"><div className="fp-card">{zoomEl}</div></div>}
       bgNode={
         <div className="fp-bg" aria-hidden="true">
           <img className="fp-blur" src={floorPlan.background} alt="" draggable={false} />
@@ -35,29 +53,7 @@ export default function FloorPlanScene() {
         <>
           <SideMenu active="/floor-plan" />
           <div className="fp-stage">
-            {unit ? (
-              <div className="fp-card" key={`u-${unit.id}`}>
-                <ZoomPan label={`${unit.label} plan`}>
-                  <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
-                </ZoomPan>
-                <button type="button" className="ctl fp-close" aria-label="Close" onClick={() => setUnit(null)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-                </button>
-              </div>
-            ) : (
-              <div className="fp-card" key={plan.id}>
-                <ZoomPan label={`${tab.label} floor plan`}>
-                  <img className="fp-img" src={plan.src} alt={`${tab.label} ${plan.label} floor plan`} draggable={false} />
-                  {plan.hotspots.map((h) => (
-                    <button key={h.id} type="button" className="hotspot" style={{ left: `${h.x}%`, top: `${h.y}%` }}
-                      aria-label={h.label} onClick={() => setUnit(h)} onPointerDown={(e) => e.stopPropagation()}>
-                      <span className="hotspot-dot" aria-hidden="true" />
-                      <span className="hotspot-label">{h.label}</span>
-                    </button>
-                  ))}
-                </ZoomPan>
-              </div>
-            )}
+            <div className="fp-card" key={unit ? `u-${unit.id}` : plan.id}>{zoomEl}</div>
           </div>
           <div className="dock" role="region" aria-label="Floor plan controls">
             {!unit && tab.plans.length > 1 && (
