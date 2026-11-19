@@ -4,6 +4,7 @@ import { canFullscreen, isIOS } from '@/lib/device';
 
 const MIN = 1;
 const MAX = 5;
+const PINCH_GAIN = 2; // fingers move less than the image zooms, so one spread is enough
 type T = { s: number; x: number; y: number };
 
 // Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
@@ -47,6 +48,16 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
     return () => document.removeEventListener('fullscreenchange', sync);
   }, []);
 
+  // pinch must zoom only the plan, never the whole page (Android: touch-action; iOS Safari: gesturestart)
+  useEffect(() => {
+    const root = document.documentElement;
+    const prev = root.style.touchAction;
+    const stop = (e: Event) => e.preventDefault();
+    root.style.touchAction = 'none';
+    document.addEventListener('gesturestart', stop);
+    return () => { root.style.touchAction = prev; document.removeEventListener('gesturestart', stop); };
+  }, []);
+
   useEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -78,7 +89,7 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
       const c = rel({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
       if (last.current) {
         const l = last.current;
-        const f = d / l.d;
+        const f = Math.pow(d / l.d, PINCH_GAIN);
         setT((p) => {
           const s = Math.min(MAX, Math.max(MIN, p.s * f));
           const k = s / p.s;

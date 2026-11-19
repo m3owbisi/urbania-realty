@@ -65,7 +65,7 @@ body { font-family: var(--font-sans); font-size: 1rem; font-weight: 300; color: 
 .hero { position: absolute; inset: 0; z-index: 5; }
 .hero-copy { position: absolute; left: var(--gutter); top: 38.6%; }
 h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-size: 5rem; line-height: 6rem; white-space: nowrap; }
-.hero p { margin-top: 0.9375rem; color: var(--gold); font-weight: 300; font-size: 1.875rem; line-height: 2.25rem; }
+.hero p { margin-top: 0.9375rem; color: #d9d9d9; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-weight: 300; font-size: 1.875rem; line-height: 2.25rem; }
 .line { display: block; white-space: nowrap; }
 .cta-wrap { margin-top: 2.1875rem; }
 .cta {
@@ -168,7 +168,8 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .seg { display: flex; width: 12.75rem; height: 2.25rem; border: 0.6px solid rgba(255, 255, 255, 0.6); border-radius: 4px; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
 .seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
 .seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
-.dock-buttons-wrap { display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
+.dock-buttons-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; height: 36px; width: fit-content; }
+.dock-buttons-wrap > .seg { flex: none; height: 34px; } /* Type 1/2 sits left of Typical on the same line as the tabs */
 .chips { display: flex; align-items: center; justify-content: center; }
 .chips.times { width: 351px; height: 36px; gap: 9px; }
 .chips.floors { width: 353px; height: 34px; gap: 7px; }

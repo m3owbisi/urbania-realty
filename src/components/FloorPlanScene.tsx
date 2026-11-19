@@ -56,14 +56,14 @@ export default function FloorPlanScene() {
             <div className="fp-card" key={unit ? `u-${unit.id}` : plan.id}>{zoomEl}</div>
           </div>
           <div className="dock" role="region" aria-label="Floor plan controls">
-            {!unit && tab.plans.length > 1 && (
-              <div className="seg" role="group" aria-label="Plan type">
-                {tab.plans.map((p, i) => (
-                  <button key={p.id} type="button" aria-pressed={i === planIdx} onClick={() => setPlanIdx(i)}>{p.label}</button>
-                ))}
-              </div>
-            )}
             <div className="dock-buttons-wrap">
+              {!unit && tab.plans.length > 1 && (
+                <div className="seg" role="group" aria-label="Plan type">
+                  {tab.plans.map((p, i) => (
+                    <button key={p.id} type="button" aria-pressed={i === planIdx} onClick={() => setPlanIdx(i)}>{p.label}</button>
+                  ))}
+                </div>
+              )}
               <div className="chips fp-tabs" role="group" aria-label="Floor plan selection">
                 {floorPlan.tabs.map((t) => (
                   <button key={t.id} type="button" className="chip chip-floor" aria-pressed={t.id === tabId} onClick={() => pickTab(t.id)}>{t.label}</button>
