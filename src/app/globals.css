@@ -263,14 +263,18 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 /* floor plans: blurred glass of the "experience now" image, zoomable plan card, hotspots */
 .fp-bg { position: absolute; inset: 0; overflow: hidden; background: #000; }
 .fp-blur { position: absolute; inset: -4rem; width: calc(100% + 8rem); height: calc(100% + 8rem); object-fit: cover; filter: blur(2.5rem) brightness(0.55) saturate(1.1); }
-.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: 5.1875rem; bottom: 7.5rem; display: grid; place-items: center; container-type: size; pointer-events: none; }
+.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: 5.1875rem; bottom: 7.5rem; display: grid; place-items: center; pointer-events: none; }
 /* card fills the space between navbar and dock, centred; --foot is the white strip for the Type toggle (plan keeps 1143:915) */
-.fp-card { --foot: 0rem; --ch: min(100cqh, 58rem, calc(100cqw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
+.fp-card { --foot: 0rem; --ch: min(calc(100dvh - 12.6875rem), 58rem, calc(90vw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
 .fp-card.foot { --foot: 3.5rem; background: #fff; border-radius: 1.25rem; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); }
 .fp-card.foot .zoom { bottom: var(--foot); }
 .fp-card.foot .zoom-box { border-radius: 1.25rem 1.25rem 0 0; box-shadow: none; }
 .fp-card .seg { position: absolute; z-index: 4; left: 50%; bottom: calc((var(--foot) - 2.25rem) / 2); translate: -50% 0; }
 .zoom { position: absolute; inset: 0; }
+.zoom.big { position: fixed; inset: 0; }
+html.fp-zoomed .fp-stage { z-index: 30; }
+html.fp-zoomed .fp-card .seg { visibility: hidden; }
+.fp-card.foot .zoom.big { bottom: 0; }
 .zoom-box { position: absolute; inset: 0; overflow: hidden; border-radius: 1.25rem; background: #fff; touch-action: none; cursor: zoom-in; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); user-select: none; -webkit-user-select: none; }
 .zoom-box.zoomed { cursor: grab; }
 .zoom-box.zoomed:active { cursor: grabbing; }
@@ -286,12 +290,12 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .fp-card .ctl svg { width: 1.25rem; height: 1.25rem; }
 .zoom-close { position: absolute; z-index: 3; bottom: 1rem; left: 50%; translate: -50% 0; }
 /* fullscreen: plan keeps its ratio, centred on the device screen */
-.zoom:fullscreen { background: #fff; }
-.zoom:fullscreen .zoom-box { border-radius: 0; box-shadow: none; }
-.zoom:fullscreen .zoom-layer { inset: auto; left: 50%; top: 50%; translate: -50% -50%; width: min(100vw, calc(100vh * 1143 / 915)); aspect-ratio: 1143 / 915; }
+.zoom:fullscreen, .zoom.big { background: #fff; }
+.zoom:fullscreen .zoom-box, .zoom.big .zoom-box { border-radius: 0; box-shadow: none; }
+.zoom:fullscreen .zoom-layer, .zoom.big .zoom-layer { inset: auto; left: 50%; top: 50%; translate: -50% -50%; width: min(100vw, calc(100vh * 1143 / 915)); aspect-ratio: 1143 / 915; }
 /* interface hidden: the same plan card, centred on the screen */
 .fp-full .zoom-fs { display: none; } /* eye view has no fullscreen of its own */
-.fp-full { position: fixed; inset: 0; z-index: 15; display: grid; place-items: center; padding-block: 5.1875rem; container-type: size; pointer-events: none; }
+.fp-full { position: fixed; inset: 0; z-index: 15; display: grid; place-items: center; pointer-events: none; }
 
 .hotspot { position: absolute; z-index: 2; width: 1.625rem; height: 1.625rem; margin: -0.8125rem 0 0 -0.8125rem; padding: 0; border: 0; background: none; cursor: pointer; scale: calc(1 / var(--z, 1)); transform-origin: 50% 50%; }
 .hotspot-dot { position: absolute; inset: 0; border-radius: 50%; border: 1px solid #fff; background: radial-gradient(circle, var(--gold-accent), var(--gold)); box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.25); transition: transform 0.2s ease; }

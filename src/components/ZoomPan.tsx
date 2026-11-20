@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { canFullscreen, isIOS } from '@/lib/device';
 
 const MIN = 1;
@@ -14,6 +14,10 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   const [fs, setFs] = useState(false);
   const [canFs, setCanFs] = useState(false);
   const [t, setT] = useState<T>({ s: 1, x: 0, y: 0 });
+  const [big, setBig] = useState(false); // full-screen look; stays on until the shrink-back animation has finished
+  const rect = useRef<DOMRect | null>(null); // where the card sits on screen, taken just before it first zooms
+  const anim = useRef<Animation[]>([]);
+  const closing = useRef(false);
   const cur = useRef<T>({ s: 1, x: 0, y: 0 }); // what is drawn
   const tgt = useRef<T>({ s: 1, x: 0, y: 0 }); // where wheel / trackpad pinch / buttons are heading
   const raf = useRef(0);
@@ -29,6 +33,47 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
     const my = (el.clientHeight * (s - 1)) / 2;
     return { s, x: Math.min(mx, Math.max(-mx, n.x)), y: Math.min(my, Math.max(-my, n.y)) };
   }, []);
+
+  const snap = () => {
+    if (!closing.current && root.current && !root.current.classList.contains('big')) rect.current = root.current.getBoundingClientRect();
+  };
+
+  // card <-> full screen as one continuous animation (clip + scale), so crossing zoom 1x never jumps
+  const flip = (to: 'full' | 'card', done?: () => void) => {
+    const el = root.current, b = box.current, r = rect.current;
+    if (!el || !b || !r || typeof el.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) { done?.(); return; }
+    const vw = innerWidth, vh = innerHeight, k = r.width / Math.min(vw, (vh * 1143) / 915);
+    const clip = `inset(${r.top}px ${vw - r.right}px ${vh - r.bottom}px ${r.left}px round 20px)`;
+    const tf = `translate(${r.left + r.width / 2 - vw / 2}px, ${r.top + r.height / 2 - vh / 2}px) scale(${k})`;
+    const full = 'inset(0px round 0px)';
+    const o = { duration: 320, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both' as const };
+    const [c, x] = to === 'full' ? [[clip, full], [tf, 'none']] : [[full, clip], ['none', tf]];
+    anim.current = [el.animate({ clipPath: c }, o), b.animate({ transform: x }, o)];
+    anim.current[0].onfinish = () => { if (to === 'full') { anim.current.forEach((a) => a.cancel()); anim.current = []; } done?.(); };
+  };
+
+  useEffect(() => {
+    const up = t.s > 1.001;
+    if (up && !big) { setBig(true); }
+    else if (up && big && closing.current) { anim.current.forEach((a) => a.cancel()); anim.current = []; closing.current = false; }
+    else if (!up && big && !closing.current && tgt.current.s <= 1.001) {
+      closing.current = true;
+      flip('card', () => { closing.current = false; setBig(false); });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t.s, big]);
+
+  useLayoutEffect(() => {
+    if (big) { flip('full'); return; }
+    anim.current.forEach((a) => a.cancel()); anim.current = [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [big]);
+
+  useEffect(() => {
+    if (!big) return;
+    document.documentElement.classList.add('fp-zoomed');
+    return () => document.documentElement.classList.remove('fp-zoomed');
+  }, [big]);
 
   // jump straight to a transform (touch drag / pinch must track the fingers 1:1)
   const put = useCallback((n: T) => {
@@ -54,10 +99,12 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
 
   // zoom by factor around a point (relative to the box centre) so the point under the cursor stays put
   const zoomAt = useCallback((f: number, px = 0, py = 0) => {
+    snap();
     const p = tgt.current;
     const s = Math.min(MAX, Math.max(MIN, p.s * f));
     const k = s / p.s;
     go({ s, x: px - (px - p.x) * k, y: py - (py - p.y) * k });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [go]);
 
   const rel = (e: { clientX: number; clientY: number }) => {
@@ -106,6 +153,7 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   }, [zoomAt]);
 
   const down = (e: React.PointerEvent) => {
+    snap();
     pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     moved.current = false;
     last.current = null;
@@ -141,7 +189,7 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   const up = (e: React.PointerEvent) => { pts.current.delete(e.pointerId); last.current = null; };
 
   return (
-    <div ref={root} className="zoom" role="group" aria-label={label}>
+    <div ref={root} className={big ? 'zoom big' : 'zoom'} role="group" aria-label={label}>
       <div ref={box} className={t.s > 1 ? 'zoom-box zoomed' : 'zoom-box'} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onDoubleClick={(e) => { if (t.s > 1) go({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
         <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>
