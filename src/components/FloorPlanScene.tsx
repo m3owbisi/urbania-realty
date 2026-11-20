@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import SceneFrame from './SceneFrame';
 import SideMenu from './SideMenu';
-import ZoomPan from './ZoomPan';
+import ZoomPan, { type ZoomTransform } from './ZoomPan';
 import { useProject } from '@/hooks/useProject';
 import type { FloorHotspot } from '@/types/project';
 
@@ -11,6 +11,7 @@ export default function FloorPlanScene() {
   const [tabId, setTabId] = useState(floorPlan.tabs[0].id);
   const [planIdx, setPlanIdx] = useState(0); // Typical always opens on Type 1
   const [unit, setUnit] = useState<FloorHotspot | null>(null);
+  const [transform, setTransform] = useState<ZoomTransform>({ s: 1, x: 0, y: 0 });
 
   const tab = floorPlan.tabs.find((t) => t.id === tabId)!;
   const plan = tab.plans[Math.min(planIdx, tab.plans.length - 1)];
@@ -22,18 +23,30 @@ export default function FloorPlanScene() {
     return () => window.removeEventListener('keydown', k);
   }, [unit]);
 
-  const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
+  const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); setTransform({ s: 1, x: 0, y: 0 }); };
 
   const foot = !unit && tab.plans.length > 1; // Type toggle lives in a white strip under the plan, so it never covers the key map
   const backLabel = tab.plans.length > 1 ? `${tab.label} ${plan.label}` : tab.label; // Back returns to the Type the unit was opened from
   const cardCls = foot ? 'fp-card foot' : 'fp-card';
 
   const zoomEl = unit ? (
-    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`} onBack={() => setUnit(null)} backLabel={backLabel}>
+    <ZoomPan
+      key={`u-${unit.id}`}
+      label={`${unit.label} plan`}
+      onBack={() => setUnit(null)}
+      backLabel={backLabel}
+      initialTransform={transform.s > 1 ? transform : undefined}
+      onTransformChange={setTransform}
+    >
       <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
     </ZoomPan>
   ) : (
-    <ZoomPan key={plan.id} label={`${tab.label} floor plan`}>
+    <ZoomPan
+      key={plan.id}
+      label={`${tab.label} floor plan`}
+      initialTransform={transform.s > 1 ? transform : undefined}
+      onTransformChange={setTransform}
+    >
       <img className="fp-img" src={plan.src} alt={`${tab.label} ${plan.label} floor plan`} draggable={false} />
       {plan.hotspots.map((h) => (
         <button key={h.id} type="button" className="hotspot" style={{ left: `${h.x}%`, top: `${h.y}%` }}

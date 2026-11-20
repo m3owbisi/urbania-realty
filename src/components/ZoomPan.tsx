@@ -5,22 +5,37 @@ import { canFullscreen, isIOS } from '@/lib/device';
 const MIN = 1;
 const MAX = 5;
 const PINCH_GAIN = 2; // fingers move less than the image zooms, so one spread is enough
-type T = { s: number; x: number; y: number };
+export type ZoomTransform = { s: number; x: number; y: number };
+type T = ZoomTransform;
 
 // Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
 // onBack (optional) adds a bottom-left Back button that stays reachable at any zoom level and in fullscreen.
-export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 'Back' }: { children: React.ReactNode; label?: string; onBack?: () => void; backLabel?: string }) {
+export default function ZoomPan({
+  children,
+  label = 'Zoom',
+  onBack,
+  backLabel = 'Back',
+  initialTransform,
+  onTransformChange,
+}: {
+  children: React.ReactNode;
+  label?: string;
+  onBack?: () => void;
+  backLabel?: string;
+  initialTransform?: T;
+  onTransformChange?: (t: T) => void;
+}) {
   const box = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const [fs, setFs] = useState(false);
   const [canFs, setCanFs] = useState(false);
-  const [t, setT] = useState<T>({ s: 1, x: 0, y: 0 });
-  const [big, setBig] = useState(false); // full-screen look; stays on until the shrink-back animation has finished
+  const [t, setT] = useState<T>(() => initialTransform ?? { s: 1, x: 0, y: 0 });
+  const [big, setBig] = useState(() => (initialTransform ? initialTransform.s > 1.001 : false)); // full-screen look; stays on until the shrink-back animation has finished
   const rect = useRef<DOMRect | null>(null); // where the card sits on screen, taken just before it first zooms
   const anim = useRef<Animation[]>([]);
   const closing = useRef(false);
-  const cur = useRef<T>({ s: 1, x: 0, y: 0 }); // what is drawn
-  const tgt = useRef<T>({ s: 1, x: 0, y: 0 }); // where wheel / trackpad pinch / buttons are heading
+  const cur = useRef<T>(initialTransform ?? { s: 1, x: 0, y: 0 }); // what is drawn
+  const tgt = useRef<T>(initialTransform ?? { s: 1, x: 0, y: 0 }); // where wheel / trackpad pinch / buttons are heading
   const raf = useRef(0);
   const pts = useRef(new Map<number, { x: number; y: number }>());
   const last = useRef<{ d: number; cx: number; cy: number } | null>(null);
@@ -65,7 +80,10 @@ export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 
   }, [t.s, big]);
 
   useLayoutEffect(() => {
-    if (big) { flip('full'); return; }
+    if (big) {
+      if (rect.current) flip('full');
+      return;
+    }
     anim.current.forEach((a) => a.cancel()); anim.current = [];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [big]);
@@ -75,6 +93,10 @@ export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 
     document.documentElement.classList.add('fp-zoomed');
     return () => document.documentElement.classList.remove('fp-zoomed');
   }, [big]);
+
+  useEffect(() => {
+    onTransformChange?.(t);
+  }, [t, onTransformChange]);
 
   // jump straight to a transform (touch drag / pinch must track the fingers 1:1)
   const put = useCallback((n: T) => {
