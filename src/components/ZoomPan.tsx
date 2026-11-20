@@ -198,7 +198,6 @@ export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 
       {onBack && (
         <button type="button" className="ctl zoom-back" aria-label={`Back to ${backLabel}`} onClick={onBack}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
-          <span>Back</span>
         </button>
       )}
       {(fs || t.s > 1.001) && (

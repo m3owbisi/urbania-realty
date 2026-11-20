@@ -137,14 +137,6 @@ export default function BrochureViewer({ src }: { src: string }) {
   return (
     <>
       <div className="brochure-bg">{cover && <img className="brochure-blur" src={cover} alt="" aria-hidden="true" />}</div>
-      <div className="bz-ctl" role="group" aria-label="Zoom controls">
-        <button type="button" className="ctl" aria-label="Zoom in" disabled={zoom >= MAX_ZOOM} onClick={() => zoomTo(z.current * 1.5)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-        </button>
-        <button type="button" className="ctl" aria-label="Zoom out" disabled={zoom <= 1} onClick={() => zoomTo(z.current / 1.5)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M5 12h14" /></svg>
-        </button>
-      </div>
       <div ref={box} className="brochure" role="document" aria-label="Brochure">
         {failed && <p className="brochure-msg">The brochure could not be loaded. <a href={src} download>Download the PDF</a></p>}
         {!doc && !failed && <p className="brochure-msg">Loading brochure…</p>}
