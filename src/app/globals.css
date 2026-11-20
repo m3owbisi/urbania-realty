@@ -255,13 +255,14 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .brochure-bg { position: absolute; inset: 0; background: #ece5d6; overflow: hidden; }
 .brochure-blur { position: absolute; inset: -4rem; width: calc(100% + 8rem); height: calc(100% + 8rem); object-fit: cover; filter: blur(3rem) saturate(1.15) brightness(0.92); animation: render-in 0.8s ease; }
 .brochure-bg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8rem; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55)); }  /* keeps the white watermark legible */
-.brochure { --bw: min(56rem, 90vw); --bz: 1; position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; padding: 6.5rem 0 7rem; scrollbar-width: none; touch-action: pan-x pan-y; }
-@media (orientation: portrait) { .brochure { --bw: 94vw; } }
-.brochure::-webkit-scrollbar { display: none; }
-.brochure-page { width: calc(var(--bw) * var(--bz)); flex: none; aspect-ratio: 9 / 16; margin: 0 auto 1.5rem; background: #fff; box-shadow: 0 0.5rem 2rem rgba(40, 28, 10, 0.35); }
-.brochure-page canvas { display: block; width: 100%; height: 100%; }
-.bz-ctl { position: absolute; z-index: 13; right: calc(1rem + env(safe-area-inset-right)); bottom: 4rem; display: flex; flex-direction: column; gap: 0.25rem; }
-.bz-ctl .ctl:disabled { opacity: 0.4; cursor: default; }
+/* flipbook: react-pageflip draws the book inside .flip-stage; the stage is clipped so nothing can overflow sideways */
+.flip-stage { position: absolute; z-index: 2; left: 0; right: 0; top: 5.25rem; bottom: calc(var(--row-y) + var(--ctl) / 2 + 0.75rem); padding-inline: 1rem; overflow: hidden; }
+.flip-box { width: 100%; height: 100%; min-width: 0 !important; min-height: 0 !important; } /* the library sets inline minimums that would overflow a phone */
+.flip-page { background: #fff; overflow: hidden; }
+.flip-page img { display: block; width: 100%; height: 100%; object-fit: fill; pointer-events: none; user-select: none; -webkit-user-select: none; }
+.flip-nav { position: absolute; z-index: 13; left: 0; right: 0; margin-inline: auto; width: fit-content; bottom: calc(var(--row-y) - var(--ctl) / 2); display: flex; align-items: center; gap: 0.625rem; }
+.flip-nav .ctl:disabled { opacity: 0.4; cursor: default; }
+.flip-count { min-width: 4.5rem; text-align: center; color: #fff; font: 350 var(--fs-m)/1 'Gotham', var(--font-sans), sans-serif; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
 .brochure-msg { text-align: center; padding-top: 6rem; color: #5a4a2a; font-size: 1.125rem; }
 .brochure-msg a { color: var(--gold); }
 
@@ -276,7 +277,7 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
 .fp-stage, .fp-card { --stage-t: 5.1875rem; --stage-b: max(7.5rem, calc(var(--row-y) + var(--pill) / 2 + 0.5rem)); }
 .fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: var(--stage-t); bottom: var(--stage-b); display: grid; place-items: center; pointer-events: none; }
 /* card fills the space between navbar and dock, centred; --foot is the white strip for the Type toggle (plan keeps 1143:915) */
-.fp-card { --foot: 0rem; --ch: min(calc(100dvh - var(--stage-t) - var(--stage-b)), 58rem, calc(90vw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
+.fp-card { --foot: 0rem; --ch: min(calc(100dvh - var(--stage-t) - var(--stage-b)), 58rem, calc((100vw - 2 * (var(--ctl) + 1.5rem)) * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
 .fp-card.foot { --foot: max(3.5rem, calc(var(--pill) + 0.75rem)); background: #fff; border-radius: 1.25rem; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); }
 .fp-card.foot .zoom { bottom: var(--foot); }
 .fp-card.foot .zoom-box { border-radius: 1.25rem 1.25rem 0 0; box-shadow: none; }
@@ -291,24 +292,25 @@ html.fp-zoomed .fp-card .seg { visibility: hidden; }
 .zoom-box.zoomed:active { cursor: grabbing; }
 .zoom-layer { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
 .fp-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-.zoom-ctl { position: absolute; z-index: 3; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+/* card view: a vertical column outside the plan, to its right. Expanded / fullscreen: one compact row, bottom right, ending in Minimize */
+.zoom-ctl { position: absolute; z-index: 3; left: calc(100% + 0.75rem); bottom: 0; display: flex; flex-direction: column; gap: 0.625rem; }
+.zoom.big .zoom-ctl { left: auto; flex-direction: row; gap: 0.375rem; }
 .zoom-ctl .ctl:disabled { opacity: 0.4; cursor: default; }
 .fp-tabs { width: auto; gap: 7px; }
 .fp-tabs .chip-floor { width: auto; min-width: 5.5rem; padding-inline: 1rem; white-space: nowrap; }
-/* plan controls: bare icons on the white plan, no filled boxes */
-.fp-card .ctl { background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; color: #1a1a1a; }
-.fp-card .ctl:hover, .fp-card .ctl:focus-visible { background: none; color: var(--gold); }
-.fp-card .ctl svg { width: 1.25rem; height: 1.25rem; }
-.zoom-close { position: absolute; z-index: 3; bottom: 1rem; left: 50%; translate: -50% 0; }
+/* Back is a bare icon on the white plan; the zoom controls reuse the site's .ctl look */
+.fp-card .zoom-back { background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; color: #1a1a1a; }
+.fp-card .zoom-back:hover, .fp-card .zoom-back:focus-visible { background: none; color: var(--gold); }
+.fp-card .zoom-back svg { width: 1.25rem; height: 1.25rem; }
 .zoom-back { position: absolute; z-index: 3; bottom: 1rem; left: 1rem; width: auto; min-width: var(--ctl); padding: 0 0.625rem; gap: 0.375rem; grid-auto-flow: column; font: 350 var(--fs-s)/1 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; }
 .fp-card .zoom-back { color: #1a1a1a; }
-.zoom.big .zoom-back, .zoom.big .zoom-close, .zoom.big .zoom-ctl { bottom: calc(1rem + env(safe-area-inset-bottom)); }
+.zoom.big .zoom-back, .zoom.big .zoom-ctl { bottom: calc(1rem + env(safe-area-inset-bottom)); }
 .zoom.big .zoom-back { left: calc(1rem + env(safe-area-inset-left)); }
 .zoom.big .zoom-ctl { right: calc(1rem + env(safe-area-inset-right)); }
 /* fullscreen: plan keeps its ratio, centred on the device screen */
-.zoom:fullscreen, .zoom.big { background: #fff; }
-.zoom:fullscreen .zoom-box, .zoom.big .zoom-box { border-radius: 0; box-shadow: none; }
-.zoom:fullscreen .zoom-layer, .zoom.big .zoom-layer { inset: auto; left: 50%; top: 50%; translate: -50% -50%; width: min(100vw, calc(100vh * 1143 / 915)); aspect-ratio: 1143 / 915; }
+.zoom.big { background: #fff; }
+.zoom.big .zoom-box { border-radius: 0; box-shadow: none; }
+.zoom.big .zoom-layer { inset: auto; left: 50%; top: 50%; translate: -50% -50%; width: min(100vw, calc(100vh * 1143 / 915)); aspect-ratio: 1143 / 915; }
 /* interface hidden: the same plan card, centred on the screen */
 .fp-full .zoom-fs { display: none; } /* eye view has no fullscreen of its own */
 .fp-full { position: fixed; inset: 0; z-index: 15; display: grid; place-items: center; pointer-events: none; }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 import FloorPlanScene from '@/components/FloorPlanScene';
 
@@ -34,12 +34,30 @@ describe('floor plans', () => {
     expect(screen.getByRole('button', { name: 'Type 2' }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getAllByRole('button', { name: /^Unit 0\d/ })).toHaveLength(4);
   });
-  it('shows a Close button once the plan is zoomed; it zooms back out', async () => {
-    render(<FloorPlanScene />);
-    expect(screen.queryByRole('button', { name: 'Close zoom' })).toBeNull();
+  it('zooming stays inside the plan box: no Minimize, no overlay until Expand is pressed', () => {
+    const { container } = render(<FloorPlanScene />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Zoom in' })[0]);
-    const close = await screen.findByRole('button', { name: 'Close zoom' });
-    fireEvent.click(close);
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close zoom' })).toBeNull());
+    expect(screen.queryByRole('button', { name: 'Minimize' })).toBeNull();
+    expect(container.querySelector('.zoom.big')).toBeNull();
+  });
+  it('Expand shows the overlay with Minimize; Minimize returns without touching browser fullscreen', () => {
+    const exit = vi.fn(), req = vi.fn();
+    document.exitFullscreen = exit;
+    document.documentElement.requestFullscreen = req;
+    const { container } = render(<FloorPlanScene />);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Expand floor plan' })[0]);
+    expect(container.querySelector('.zoom.big')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Minimize' }));
+    expect(container.querySelector('.zoom.big')).toBeNull();
+    expect(exit).not.toHaveBeenCalled();
+    expect(req).not.toHaveBeenCalled();
+  });
+  it('Escape minimizes the expanded plan only, not the unit view underneath', () => {
+    const { container } = render(<FloorPlanScene />);
+    fireEvent.click(screen.getByRole('button', { name: /Unit 02 · 1862/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Expand floor plan' })[0]);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(container.querySelector('.zoom.big')).toBeNull();
+    expect(screen.getByAltText(/Unit 02 · 1862 sq.ft. floor plan/)).toBeTruthy();
   });
 });
