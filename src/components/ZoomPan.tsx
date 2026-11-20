@@ -20,7 +20,6 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   const pts = useRef(new Map<number, { x: number; y: number }>());
   const last = useRef<{ d: number; cx: number; cy: number } | null>(null);
   const moved = useRef(false);
-  const big = t.s > 1;
 
   const clamp = useCallback((n: T): T => {
     const el = box.current;
@@ -52,16 +51,6 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   }, [clamp]);
 
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
-
-  useEffect(() => {
-    if (!big) return;
-    document.documentElement.classList.add('fp-zoomed');
-    // layout switches to fullscreen-sized box, so recentre; keep any running ease alive
-    cur.current = { ...cur.current, x: 0, y: 0 };
-    tgt.current = clamp({ ...tgt.current, x: 0, y: 0 });
-    setT(cur.current);
-    return () => document.documentElement.classList.remove('fp-zoomed');
-  }, [big, clamp]);
 
   // zoom by factor around a point (relative to the box centre) so the point under the cursor stays put
   const zoomAt = useCallback((f: number, px = 0, py = 0) => {
@@ -152,7 +141,7 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
   const up = (e: React.PointerEvent) => { pts.current.delete(e.pointerId); last.current = null; };
 
   return (
-    <div ref={root} className={big ? 'zoom big' : 'zoom'} role="group" aria-label={label}>
+    <div ref={root} className="zoom" role="group" aria-label={label}>
       <div ref={box} className={t.s > 1 ? 'zoom-box zoomed' : 'zoom-box'} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onDoubleClick={(e) => { if (t.s > 1) go({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
         <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>

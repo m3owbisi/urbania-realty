@@ -24,6 +24,9 @@ export default function FloorPlanScene() {
 
   const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
 
+  const foot = !unit && tab.plans.length > 1; // Type toggle lives in a white strip under the plan, so it never covers the key map
+  const cardCls = foot ? 'fp-card foot' : 'fp-card';
+
   const zoomEl = unit ? (
     <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`}>
       <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
@@ -43,7 +46,7 @@ export default function FloorPlanScene() {
 
   return (
     <SceneFrame
-      hiddenView={<div className="fp-full"><div className="fp-card">{zoomEl}</div></div>}
+      hiddenView={<div className="fp-full"><div className={cardCls}>{zoomEl}</div></div>}
       bgNode={
         <div className="fp-bg" aria-hidden="true">
           <img className="fp-blur" src={floorPlan.background} alt="" draggable={false} />
@@ -53,17 +56,19 @@ export default function FloorPlanScene() {
         <>
           <SideMenu active="/floor-plan" />
           <div className="fp-stage">
-            <div className="fp-card" key={unit ? `u-${unit.id}` : plan.id}>{zoomEl}</div>
-          </div>
-          <div className="dock" role="region" aria-label="Floor plan controls">
-            <div className="dock-buttons-wrap">
-              {!unit && tab.plans.length > 1 && (
+            <div className={cardCls} key={unit ? `u-${unit.id}` : tab.id}>
+              {zoomEl}
+              {foot && (
                 <div className="seg" role="group" aria-label="Plan type">
                   {tab.plans.map((p, i) => (
                     <button key={p.id} type="button" aria-pressed={i === planIdx} onClick={() => setPlanIdx(i)}>{p.label}</button>
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+          <div className="dock" role="region" aria-label="Floor plan controls">
+            <div className="dock-buttons-wrap">
               <div className="chips fp-tabs" role="group" aria-label="Floor plan selection">
                 {floorPlan.tabs.map((t) => (
                   <button key={t.id} type="button" className="chip chip-floor" aria-pressed={t.id === tabId} onClick={() => pickTab(t.id)}>{t.label}</button>

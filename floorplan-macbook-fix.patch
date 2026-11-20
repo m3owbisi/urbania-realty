@@ -1,0 +1,191 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index c9e9442..bc78e3f 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -169,7 +169,6 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
+ .seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
+ .dock-buttons-wrap { position: relative; display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
+-.dock-buttons-wrap > .seg { position: absolute; right: calc(100% + 2rem); top: 50%; translate: 0 -50%; height: 34px; }
+ .chips { display: flex; align-items: center; justify-content: center; }
+ .chips.times { width: 351px; height: 36px; gap: 9px; }
+ .chips.floors { width: 353px; height: 34px; gap: 7px; }
+@@ -264,11 +263,18 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ /* floor plans: blurred glass of the "experience now" image, zoomable plan card, hotspots */
+ .fp-bg { position: absolute; inset: 0; overflow: hidden; background: #000; }
+ .fp-blur { position: absolute; inset: -4rem; width: calc(100% + 8rem); height: calc(100% + 8rem); object-fit: cover; filter: blur(2.5rem) brightness(0.55) saturate(1.1); }
+-.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: 5.1875rem; margin-inline: auto; width: fit-content; pointer-events: none; }
+-.fp-card { position: relative; height: 52rem; max-height: calc(100dvh - 17rem); aspect-ratio: 1143 / 915; animation: render-in 0.4s ease; pointer-events: auto; }
++.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: 5.1875rem; bottom: 7.5rem; display: grid; place-items: center; pointer-events: none; }
++/* card fills the space between navbar and dock, centred; --foot is the white strip for the Type toggle (plan keeps 1143:915) */
++.fp-card { --foot: 0rem; --ch: min(calc(100dvh - 12.6875rem), 58rem, calc(90vw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
++.fp-card.foot { --foot: 3.5rem; background: #fff; border-radius: 1.25rem; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); }
++.fp-card.foot .zoom { bottom: var(--foot); }
++.fp-card.foot .zoom-box { border-radius: 1.25rem 1.25rem 0 0; box-shadow: none; }
++.fp-card .seg { position: absolute; z-index: 4; left: 50%; bottom: calc((var(--foot) - 2.25rem) / 2); translate: -50% 0; }
+ .zoom { position: absolute; inset: 0; }
+ .zoom.big { position: fixed; inset: 0; }
+ html.fp-zoomed .fp-stage { z-index: 30; }
++html.fp-zoomed .fp-card .seg { visibility: hidden; }
++.fp-card.foot .zoom.big { bottom: 0; }
+ .zoom-box { position: absolute; inset: 0; overflow: hidden; border-radius: 1.25rem; background: #fff; touch-action: none; cursor: zoom-in; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); user-select: none; -webkit-user-select: none; }
+ .zoom-box.zoomed { cursor: grab; }
+ .zoom-box.zoomed:active { cursor: grabbing; }
+diff --git a/src/components/FloorPlanScene.tsx b/src/components/FloorPlanScene.tsx
+index 22fc6de..4ee7b37 100644
+--- a/src/components/FloorPlanScene.tsx
++++ b/src/components/FloorPlanScene.tsx
+@@ -24,6 +24,9 @@ export default function FloorPlanScene() {
+ 
+   const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
+ 
++  const foot = !unit && tab.plans.length > 1; // Type toggle lives in a white strip under the plan, so it never covers the key map
++  const cardCls = foot ? 'fp-card foot' : 'fp-card';
++
+   const zoomEl = unit ? (
+     <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`}>
+       <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
+@@ -43,7 +46,7 @@ export default function FloorPlanScene() {
+ 
+   return (
+     <SceneFrame
+-      hiddenView={<div className="fp-full"><div className="fp-card">{zoomEl}</div></div>}
++      hiddenView={<div className="fp-full"><div className={cardCls}>{zoomEl}</div></div>}
+       bgNode={
+         <div className="fp-bg" aria-hidden="true">
+           <img className="fp-blur" src={floorPlan.background} alt="" draggable={false} />
+@@ -53,17 +56,19 @@ export default function FloorPlanScene() {
+         <>
+           <SideMenu active="/floor-plan" />
+           <div className="fp-stage">
+-            <div className="fp-card" key={unit ? `u-${unit.id}` : plan.id}>{zoomEl}</div>
+-          </div>
+-          <div className="dock" role="region" aria-label="Floor plan controls">
+-            <div className="dock-buttons-wrap">
+-              {!unit && tab.plans.length > 1 && (
++            <div className={cardCls} key={unit ? `u-${unit.id}` : tab.id}>
++              {zoomEl}
++              {foot && (
+                 <div className="seg" role="group" aria-label="Plan type">
+                   {tab.plans.map((p, i) => (
+                     <button key={p.id} type="button" aria-pressed={i === planIdx} onClick={() => setPlanIdx(i)}>{p.label}</button>
+                   ))}
+                 </div>
+               )}
++            </div>
++          </div>
++          <div className="dock" role="region" aria-label="Floor plan controls">
++            <div className="dock-buttons-wrap">
+               <div className="chips fp-tabs" role="group" aria-label="Floor plan selection">
+                 {floorPlan.tabs.map((t) => (
+                   <button key={t.id} type="button" className="chip chip-floor" aria-pressed={t.id === tabId} onClick={() => pickTab(t.id)}>{t.label}</button>
+diff --git a/src/components/ZoomPan.tsx b/src/components/ZoomPan.tsx
+index a6e5560..92aa6b0 100644
+--- a/src/components/ZoomPan.tsx
++++ b/src/components/ZoomPan.tsx
+@@ -1,5 +1,5 @@
+ 'use client';
+-import { useCallback, useEffect, useRef, useState } from 'react';
++import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+ import { canFullscreen, isIOS } from '@/lib/device';
+ 
+ const MIN = 1;
+@@ -14,13 +14,16 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
+   const [fs, setFs] = useState(false);
+   const [canFs, setCanFs] = useState(false);
+   const [t, setT] = useState<T>({ s: 1, x: 0, y: 0 });
++  const [big, setBig] = useState(false); // full-screen look; stays on until the shrink-back animation has finished
++  const rect = useRef<DOMRect | null>(null); // where the card sits on screen, taken just before it first zooms
++  const anim = useRef<Animation[]>([]);
++  const closing = useRef(false);
+   const cur = useRef<T>({ s: 1, x: 0, y: 0 }); // what is drawn
+   const tgt = useRef<T>({ s: 1, x: 0, y: 0 }); // where wheel / trackpad pinch / buttons are heading
+   const raf = useRef(0);
+   const pts = useRef(new Map<number, { x: number; y: number }>());
+   const last = useRef<{ d: number; cx: number; cy: number } | null>(null);
+   const moved = useRef(false);
+-  const big = t.s > 1;
+ 
+   const clamp = useCallback((n: T): T => {
+     const el = box.current;
+@@ -31,6 +34,47 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
+     return { s, x: Math.min(mx, Math.max(-mx, n.x)), y: Math.min(my, Math.max(-my, n.y)) };
+   }, []);
+ 
++  const snap = () => {
++    if (!closing.current && root.current && !root.current.classList.contains('big')) rect.current = root.current.getBoundingClientRect();
++  };
++
++  // card <-> full screen as one continuous animation (clip + scale), so crossing zoom 1x never jumps
++  const flip = (to: 'full' | 'card', done?: () => void) => {
++    const el = root.current, b = box.current, r = rect.current;
++    if (!el || !b || !r || typeof el.animate !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) { done?.(); return; }
++    const vw = innerWidth, vh = innerHeight, k = r.width / Math.min(vw, (vh * 1143) / 915);
++    const clip = `inset(${r.top}px ${vw - r.right}px ${vh - r.bottom}px ${r.left}px round 20px)`;
++    const tf = `translate(${r.left + r.width / 2 - vw / 2}px, ${r.top + r.height / 2 - vh / 2}px) scale(${k})`;
++    const full = 'inset(0px round 0px)';
++    const o = { duration: 320, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both' as const };
++    const [c, x] = to === 'full' ? [[clip, full], [tf, 'none']] : [[full, clip], ['none', tf]];
++    anim.current = [el.animate({ clipPath: c }, o), b.animate({ transform: x }, o)];
++    anim.current[0].onfinish = () => { if (to === 'full') { anim.current.forEach((a) => a.cancel()); anim.current = []; } done?.(); };
++  };
++
++  useEffect(() => {
++    const up = t.s > 1.001;
++    if (up && !big) { setBig(true); }
++    else if (up && big && closing.current) { anim.current.forEach((a) => a.cancel()); anim.current = []; closing.current = false; }
++    else if (!up && big && !closing.current && tgt.current.s <= 1.001) {
++      closing.current = true;
++      flip('card', () => { closing.current = false; setBig(false); });
++    }
++  // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [t.s, big]);
++
++  useLayoutEffect(() => {
++    if (big) { flip('full'); return; }
++    anim.current.forEach((a) => a.cancel()); anim.current = [];
++  // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [big]);
++
++  useEffect(() => {
++    if (!big) return;
++    document.documentElement.classList.add('fp-zoomed');
++    return () => document.documentElement.classList.remove('fp-zoomed');
++  }, [big]);
++
+   // jump straight to a transform (touch drag / pinch must track the fingers 1:1)
+   const put = useCallback((n: T) => {
+     cancelAnimationFrame(raf.current); raf.current = 0;
+@@ -53,22 +97,14 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
+ 
+   useEffect(() => () => cancelAnimationFrame(raf.current), []);
+ 
+-  useEffect(() => {
+-    if (!big) return;
+-    document.documentElement.classList.add('fp-zoomed');
+-    // layout switches to fullscreen-sized box, so recentre; keep any running ease alive
+-    cur.current = { ...cur.current, x: 0, y: 0 };
+-    tgt.current = clamp({ ...tgt.current, x: 0, y: 0 });
+-    setT(cur.current);
+-    return () => document.documentElement.classList.remove('fp-zoomed');
+-  }, [big, clamp]);
+-
+   // zoom by factor around a point (relative to the box centre) so the point under the cursor stays put
+   const zoomAt = useCallback((f: number, px = 0, py = 0) => {
++    snap();
+     const p = tgt.current;
+     const s = Math.min(MAX, Math.max(MIN, p.s * f));
+     const k = s / p.s;
+     go({ s, x: px - (px - p.x) * k, y: py - (py - p.y) * k });
++  // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [go]);
+ 
+   const rel = (e: { clientX: number; clientY: number }) => {
+@@ -117,6 +153,7 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
+   }, [zoomAt]);
+ 
+   const down = (e: React.PointerEvent) => {
++    snap();
+     pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+     moved.current = false;
+     last.current = null;
