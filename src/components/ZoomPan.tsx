@@ -8,7 +8,8 @@ const PINCH_GAIN = 2; // fingers move less than the image zooms, so one spread i
 type T = { s: number; x: number; y: number };
 
 // Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
-export default function ZoomPan({ children, label = 'Zoom' }: { children: React.ReactNode; label?: string }) {
+// onBack (optional) adds a bottom-left Back button that stays reachable at any zoom level and in fullscreen.
+export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 'Back' }: { children: React.ReactNode; label?: string; onBack?: () => void; backLabel?: string }) {
   const box = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const [fs, setFs] = useState(false);
@@ -194,8 +195,15 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
         onDoubleClick={(e) => { if (t.s > 1) go({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
         <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>
       </div>
-      {fs && (
-        <button type="button" className="ctl zoom-close" aria-label="Exit fullscreen" onClick={() => void document.exitFullscreen()}>
+      {onBack && (
+        <button type="button" className="ctl zoom-back" aria-label={`Back to ${backLabel}`} onClick={onBack}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+          <span>Back</span>
+        </button>
+      )}
+      {(fs || t.s > 1.001) && (
+        <button type="button" className="ctl zoom-close" aria-label={fs ? 'Exit fullscreen' : 'Close zoom'}
+          onClick={() => (fs ? void document.exitFullscreen() : go({ s: 1, x: 0, y: 0 }))}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       )}

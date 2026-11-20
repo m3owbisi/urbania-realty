@@ -1,0 +1,486 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index bc78e3f..88e1b79 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -20,7 +20,8 @@
+ @font-face { font-family: 'Source Sans 3'; font-weight: 400; font-display: swap; src: url('/fonts/SourceSans3-Regular.woff2') format('woff2'); }
+ 
+ /* 1rem = 16 Figma px on a 1920x1080 canvas, shrinking with the viewport so laptops match the design proportions. */
+-html { font-size: min(0.8333vw, 1.4815vh); }
++/* floor of 10px: on phones / portrait tablets the viewport formula alone gives 6-7px, which made rem text and icons unreadable */
++html { font-size: max(min(0.8333vw, 1.4815vh), 10px); }
+ 
+ :root {
+   /* Colour roles (design system):
+@@ -37,12 +38,18 @@ html { font-size: min(0.8333vw, 1.4815vh); }
+   --gold-line: #d9b25c;
+   --grey: #909090;
+   --gutter: 4.6875rem;
++  --ctl: 2.125rem;                /* square icon button (34px at desktop) */
++  --pill: 2.25rem;                /* toggle / chip height (36px at desktop) */
++  --fs-s: max(0.75rem, 10px);     /* small caps text on chips, toggles, hotspot labels */
++  --fs-m: max(0.875rem, 11px);
++  --hs: max(1.625rem, 26px);      /* hotspot dot */
+   --row-y: 5.25rem;               /* vertical centre of the bottom control row (home / fullscreen / view / middle bar / compass) */
+   --slot-right: var(--gutter);  /* right-hand slot, sits just above the (untouched) watermark */
+   --font-sans: 'Gotham', 'Montserrat', system-ui, sans-serif;
+   --font-serif: 'Playfair Display', Georgia, serif;
+ }
+ * { box-sizing: border-box; margin: 0; padding: 0; }
++@media (pointer: coarse) { :root { --ctl: max(2.125rem, 36px); --pill: max(2.25rem, 34px); } }
+ html, body { height: 100%; background: #000; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+ * { -webkit-tap-highlight-color: transparent; }
+ a, button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+@@ -101,9 +108,9 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .shade { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 39.6%; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.48)); }
+ .tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+ 
+-.controls { position: absolute; z-index: 20; left: var(--gutter); bottom: calc(var(--row-y) - 1.0625rem); display: flex; gap: 0.625rem; }
++.controls { position: absolute; z-index: 20; left: var(--gutter); bottom: calc(var(--row-y) - var(--ctl) / 2); display: flex; gap: 0.625rem; }
+ .ctl {
+-  display: grid; place-items: center; width: 2.125rem; height: 2.125rem; padding: 0; cursor: pointer;
++  display: grid; place-items: center; width: var(--ctl); height: var(--ctl); padding: 0; cursor: pointer;
+   background: rgba(0, 0, 0, 0.6); border: 1px solid var(--ui); border-radius: 0.5rem; color: var(--ui);
+   backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.2);
+   transition: background-color 0.2s ease, color 0.2s ease;
+@@ -115,7 +122,7 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .ctl { transition: background-color 0.2s ease, color 0.2s ease, opacity 0.4s ease, scale 0.4s ease; }
+ .eye { transition: translate 0.6s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.4s ease, background-color 0.2s ease, color 0.2s ease; }
+ .controls[data-hidden='true'] .ctl:not(.eye) { opacity: 0; scale: 0.6; pointer-events: none; }
+-.controls[data-hidden='true'] .eye { translate: calc(var(--shift) * -2.75rem) 0; opacity: 0.7; }
++.controls[data-hidden='true'] .eye { translate: calc(var(--shift) * (var(--ctl) + 0.625rem) * -1) 0; opacity: 0.7; }
+ .controls[data-hidden='true'] .eye:hover { opacity: 1; }
+ 
+ /* Explore panel: 301x398, rows 54 */
+@@ -164,27 +171,27 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ }
+ 
+ /* Aerial dock: Aerial|Floor toggle sitting above direct option buttons without background panel */
+-.dock { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: calc(var(--row-y) - 18px); width: fit-content; max-width: 96vw; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+-.seg { display: flex; width: 12.75rem; height: 2.25rem; border: 0.6px solid rgba(255, 255, 255, 0.6); border-radius: 4px; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
+-.seg button { flex: 1; cursor: pointer; border: 0; border-radius: 4px; background: transparent; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
++.dock { position: absolute; z-index: 10; left: 0; right: 0; margin-inline: auto; bottom: calc(var(--row-y) - var(--pill) / 2); width: fit-content; max-width: 96vw; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
++.seg { display: flex; width: 12.75rem; height: var(--pill); border: 0.6px solid rgba(255, 255, 255, 0.6); border-radius: 0.25rem; background: rgba(0, 0, 0, 0.7); overflow: hidden; }
++.seg button { flex: 1; cursor: pointer; border: 0; border-radius: 0.25rem; background: transparent; color: #fff; font: 350 var(--fs-s)/1.2 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; transition: background-color 0.2s ease, color 0.2s ease; }
+ .seg button[aria-pressed='true'] { background: var(--ui); color: #fff; font-weight: 400; }
+-.dock-buttons-wrap { position: relative; display: flex; align-items: center; justify-content: center; height: 36px; width: fit-content; }
++.dock-buttons-wrap { position: relative; display: flex; align-items: center; justify-content: center; height: var(--pill); width: fit-content; }
+ .chips { display: flex; align-items: center; justify-content: center; }
+-.chips.times { width: 351px; height: 36px; gap: 9px; }
+-.chips.floors { width: 353px; height: 34px; gap: 7px; }
++.chips.times { height: var(--pill); gap: 0.5625rem; }
++.chips.floors { height: var(--ctl); gap: 0.4375rem; }
+ .chip {
+   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+-  background: rgba(0, 0, 0, 0.7); color: #fff; border: 0.6px solid #fff; border-radius: 4px;
++  background: rgba(0, 0, 0, 0.7); color: #fff; border: 0.6px solid #fff; border-radius: 0.25rem;
+   text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+ }
+ .chip:hover { background: rgba(255, 255, 255, 0.15); outline: none; }
+ .chip-time {
+-  width: 111px; height: 36px; gap: 9px; padding: 0;
+-  font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif;
++  min-width: 6.9375rem; height: var(--pill); gap: 0.5625rem; padding: 0 0.75rem;
++  font: 350 var(--fs-s)/1.2 'Gotham', var(--font-sans), sans-serif;
+ }
+ .chip-floor {
+-  width: 65px; height: 34px; padding: 0;
+-  font: 350 14px/17px 'Gotham', var(--font-sans), sans-serif;
++  min-width: 4.0625rem; height: var(--ctl); padding: 0 0.5rem;
++  font: 350 var(--fs-m)/1.2 'Gotham', var(--font-sans), sans-serif;
+   text-align: center;
+ }
+ .chip[aria-pressed='true'] { background: var(--ui); border-color: var(--ui); font-weight: 400; }
+@@ -193,7 +200,7 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .ctl.chair { width: 2.9375rem; height: 2.625rem; }
+ .mask { display: block; background: currentColor; -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
+ .chair-ico { --m: url('/icons/chair.svg'); width: 1.5rem; height: 1.375rem; }
+-.arrow { display: grid; place-items: center; width: 1.5rem; height: 2.625rem; padding: 0; cursor: pointer; background: none; border: 0; color: #fff; }
++.arrow { display: grid; place-items: center; width: max(1.5rem, 28px); height: 2.625rem; padding: 0; cursor: pointer; background: none; border: 0; color: #fff; }
+ .arrow .mask { width: 0.5625rem; height: 1.0625rem; }
+ .arrow .left { --m: url('/icons/chevron-left.svg'); } .arrow .right { --m: url('/icons/chevron-right.svg'); }
+ .arrow:hover, .arrow:focus-visible { color: var(--ui); outline: none; }
+@@ -215,7 +222,7 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .rs-tabs .tab { flex: none; width: 8.875rem; scroll-snap-align: start; user-select: none; -webkit-user-select: none; }
+ 
+ /* renders: full-bleed image; portrait ones sit true-to-shape over a blurred copy of themselves */
+-.render-bg { position: absolute; inset: 0; overflow: hidden; background: #000; animation: render-in 0.5s ease; user-select: none; }
++.render-bg { position: absolute; inset: 0; overflow: hidden; background: #000; animation: render-in 0.5s ease; user-select: none; -webkit-user-select: none; touch-action: pan-y; cursor: grab; }
+ .render-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+ .render-img.contain { object-fit: contain; }
+ .render-blur { position: absolute; inset: -3rem; width: calc(100% + 6rem); height: calc(100% + 6rem); object-fit: cover; filter: blur(1.75rem) brightness(0.75) saturate(1.1); }
+@@ -248,10 +255,13 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ .brochure-bg { position: absolute; inset: 0; background: #ece5d6; overflow: hidden; }
+ .brochure-blur { position: absolute; inset: -4rem; width: calc(100% + 8rem); height: calc(100% + 8rem); object-fit: cover; filter: blur(3rem) saturate(1.15) brightness(0.92); animation: render-in 0.8s ease; }
+ .brochure-bg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8rem; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55)); }  /* keeps the white watermark legible */
+-.brochure { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6.5rem 0 7rem; scrollbar-width: none; }
++.brochure { --bw: min(56rem, 90vw); --bz: 1; position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; padding: 6.5rem 0 7rem; scrollbar-width: none; touch-action: pan-x pan-y; }
++@media (orientation: portrait) { .brochure { --bw: 94vw; } }
+ .brochure::-webkit-scrollbar { display: none; }
+-.brochure-page { width: min(56rem, 90vw); aspect-ratio: 9 / 16; margin: 0 auto 1.5rem; background: #fff; box-shadow: 0 0.5rem 2rem rgba(40, 28, 10, 0.35); }
++.brochure-page { width: calc(var(--bw) * var(--bz)); flex: none; aspect-ratio: 9 / 16; margin: 0 auto 1.5rem; background: #fff; box-shadow: 0 0.5rem 2rem rgba(40, 28, 10, 0.35); }
+ .brochure-page canvas { display: block; width: 100%; height: 100%; }
++.bz-ctl { position: absolute; z-index: 13; right: calc(1rem + env(safe-area-inset-right)); bottom: 4rem; display: flex; flex-direction: column; gap: 0.25rem; }
++.bz-ctl .ctl:disabled { opacity: 0.4; cursor: default; }
+ .brochure-msg { text-align: center; padding-top: 6rem; color: #5a4a2a; font-size: 1.125rem; }
+ .brochure-msg a { color: var(--gold); }
+ 
+@@ -263,13 +273,14 @@ h1 { font-family: var(--font-serif); font-weight: 400; color: var(--gold); font-
+ /* floor plans: blurred glass of the "experience now" image, zoomable plan card, hotspots */
+ .fp-bg { position: absolute; inset: 0; overflow: hidden; background: #000; }
+ .fp-blur { position: absolute; inset: -4rem; width: calc(100% + 8rem); height: calc(100% + 8rem); object-fit: cover; filter: blur(2.5rem) brightness(0.55) saturate(1.1); }
+-.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: 5.1875rem; bottom: 7.5rem; display: grid; place-items: center; pointer-events: none; }
++.fp-stage, .fp-card { --stage-t: 5.1875rem; --stage-b: max(7.5rem, calc(var(--row-y) + var(--pill) / 2 + 0.5rem)); }
++.fp-stage { position: absolute; z-index: 5; left: 0; right: 0; top: var(--stage-t); bottom: var(--stage-b); display: grid; place-items: center; pointer-events: none; }
+ /* card fills the space between navbar and dock, centred; --foot is the white strip for the Type toggle (plan keeps 1143:915) */
+-.fp-card { --foot: 0rem; --ch: min(calc(100dvh - 12.6875rem), 58rem, calc(90vw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
+-.fp-card.foot { --foot: 3.5rem; background: #fff; border-radius: 1.25rem; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); }
++.fp-card { --foot: 0rem; --ch: min(calc(100dvh - var(--stage-t) - var(--stage-b)), 58rem, calc(90vw * 915 / 1143 + var(--foot))); position: relative; height: var(--ch); width: calc((var(--ch) - var(--foot)) * 1143 / 915); animation: render-in 0.4s ease; pointer-events: auto; }
++.fp-card.foot { --foot: max(3.5rem, calc(var(--pill) + 0.75rem)); background: #fff; border-radius: 1.25rem; box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.45); }
+ .fp-card.foot .zoom { bottom: var(--foot); }
+ .fp-card.foot .zoom-box { border-radius: 1.25rem 1.25rem 0 0; box-shadow: none; }
+-.fp-card .seg { position: absolute; z-index: 4; left: 50%; bottom: calc((var(--foot) - 2.25rem) / 2); translate: -50% 0; }
++.fp-card .seg { position: absolute; z-index: 4; left: 50%; bottom: calc((var(--foot) - var(--pill)) / 2); translate: -50% 0; }
+ .zoom { position: absolute; inset: 0; }
+ .zoom.big { position: fixed; inset: 0; }
+ html.fp-zoomed .fp-stage { z-index: 30; }
+@@ -289,6 +300,11 @@ html.fp-zoomed .fp-card .seg { visibility: hidden; }
+ .fp-card .ctl:hover, .fp-card .ctl:focus-visible { background: none; color: var(--gold); }
+ .fp-card .ctl svg { width: 1.25rem; height: 1.25rem; }
+ .zoom-close { position: absolute; z-index: 3; bottom: 1rem; left: 50%; translate: -50% 0; }
++.zoom-back { position: absolute; z-index: 3; bottom: 1rem; left: 1rem; width: auto; min-width: var(--ctl); padding: 0 0.625rem; gap: 0.375rem; grid-auto-flow: column; font: 350 var(--fs-s)/1 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase; }
++.fp-card .zoom-back { color: #1a1a1a; }
++.zoom.big .zoom-back, .zoom.big .zoom-close, .zoom.big .zoom-ctl { bottom: calc(1rem + env(safe-area-inset-bottom)); }
++.zoom.big .zoom-back { left: calc(1rem + env(safe-area-inset-left)); }
++.zoom.big .zoom-ctl { right: calc(1rem + env(safe-area-inset-right)); }
+ /* fullscreen: plan keeps its ratio, centred on the device screen */
+ .zoom:fullscreen, .zoom.big { background: #fff; }
+ .zoom:fullscreen .zoom-box, .zoom.big .zoom-box { border-radius: 0; box-shadow: none; }
+@@ -297,13 +313,13 @@ html.fp-zoomed .fp-card .seg { visibility: hidden; }
+ .fp-full .zoom-fs { display: none; } /* eye view has no fullscreen of its own */
+ .fp-full { position: fixed; inset: 0; z-index: 15; display: grid; place-items: center; pointer-events: none; }
+ 
+-.hotspot { position: absolute; z-index: 2; width: 1.625rem; height: 1.625rem; margin: -0.8125rem 0 0 -0.8125rem; padding: 0; border: 0; background: none; cursor: pointer; scale: calc(1 / var(--z, 1)); transform-origin: 50% 50%; }
++.hotspot { position: absolute; z-index: 2; width: var(--hs); height: var(--hs); margin: calc(var(--hs) / -2) 0 0 calc(var(--hs) / -2); padding: 0; border: 0; background: none; cursor: pointer; scale: calc(1 / var(--z, 1)); transform-origin: 50% 50%; }
+ .hotspot-dot { position: absolute; inset: 0; border-radius: 50%; border: 1px solid #fff; background: radial-gradient(circle, var(--gold-accent), var(--gold)); box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.25); transition: transform 0.2s ease; }
+ .hotspot-dot::after { content: ''; position: absolute; inset: -0.25rem; border-radius: 50%; border: 1px solid var(--gold-accent); opacity: 0; animation: hs-pulse 2.2s ease-out infinite; }
+ .hotspot:hover .hotspot-dot, .hotspot:focus-visible .hotspot-dot { transform: scale(1.15); }
+ .hotspot:focus-visible { outline: none; }
+ .hotspot-label { position: absolute; left: 50%; bottom: calc(100% + 0.5rem); translate: -50% 0.25rem; padding: 0 0.875rem; height: 2rem; display: grid; place-items: center; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, translate 0.2s ease;
+-  background: rgba(0, 0, 0, 0.6); border: 1px solid var(--ui); border-radius: 0.5rem; color: #fff; font: 350 12px/14px 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase;
++  background: rgba(0, 0, 0, 0.6); border: 1px solid var(--ui); border-radius: 0.5rem; color: #fff; font: 350 var(--fs-s)/1.2 'Gotham', var(--font-sans), sans-serif; text-transform: uppercase;
+   backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+ .hotspot:hover .hotspot-label, .hotspot:focus-visible .hotspot-label { opacity: 1; translate: -50% 0; }
+ @keyframes hs-pulse { 0% { opacity: 0.7; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.7); } }
+diff --git a/src/components/BrochureViewer.tsx b/src/components/BrochureViewer.tsx
+index af4cefa..c98da4f 100644
+--- a/src/components/BrochureViewer.tsx
++++ b/src/components/BrochureViewer.tsx
+@@ -1,10 +1,14 @@
+ 'use client';
+-import { useEffect, useRef, useState } from 'react';
++import { useCallback, useEffect, useRef, useState } from 'react';
+ import type { PDFDocumentProxy } from 'pdfjs-dist';
+ 
+ // Pages draw lazily to canvas (works on iOS/Android, where an <iframe> PDF shows one page or forces a download)
+ // and are released again once far off-screen, so a 27-page brochure stays light on tablets.
+-function Page({ doc, n }: { doc: PDFDocumentProxy; n: number }) {
++const MAX_ZOOM = 4;
++const MAX_PX = 2400; // canvas width cap, so a 4x zoom stays within phone / tablet memory
++
++// zoom is the settled zoom level: pages redraw sharp at that size (while pinching they just stretch).
++function Page({ doc, n, zoom }: { doc: PDFDocumentProxy; n: number; zoom: number }) {
+   const box = useRef<HTMLDivElement>(null);
+   const canvas = useRef<HTMLCanvasElement>(null);
+   useEffect(() => {
+@@ -20,7 +24,7 @@ function Page({ doc, n }: { doc: PDFDocumentProxy; n: number }) {
+       const c = canvas.current;
+       if (dead || !drawn || !c) return;
+       const base = page.getViewport({ scale: 1 });
+-      const vp = page.getViewport({ scale: (el.clientWidth * Math.min(window.devicePixelRatio || 1, 1.5)) / base.width });
++      const vp = page.getViewport({ scale: Math.min(el.clientWidth * Math.min(window.devicePixelRatio || 1, 1.5), MAX_PX) / base.width });
+       c.width = vp.width; c.height = vp.height;
+       const r = page.render({ canvas: c, viewport: vp });
+       task = r;
+@@ -31,10 +35,10 @@ function Page({ doc, n }: { doc: PDFDocumentProxy; n: number }) {
+       task?.cancel();
+       if (canvas.current) { canvas.current.width = 0; canvas.current.height = 0; }
+     };
+-    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? void draw() : release()), { rootMargin: '200% 0px' });
++    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? void draw() : release()), { rootMargin: zoom > 1 ? '50% 0px' : '200% 0px' });
+     io.observe(el);
+     return () => { dead = true; io.disconnect(); task?.cancel(); };
+-  }, [doc, n]);
++  }, [doc, n, zoom]);
+   return <div ref={box} className="brochure-page"><canvas ref={canvas} aria-label={`Brochure page ${n}`} /></div>;
+ }
+ 
+@@ -42,6 +46,74 @@ export default function BrochureViewer({ src }: { src: string }) {
+   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
+   const [cover, setCover] = useState('');
+   const [failed, setFailed] = useState(false);
++  const box = useRef<HTMLDivElement>(null);
++  const z = useRef(1);
++  const timer = useRef(0);
++  const [zoom, setZoom] = useState(1);
++
++  // zoom the pages (width scales through --bz) keeping the point under the fingers / cursor in place; the box scrolls both ways
++  const zoomTo = useCallback((next: number, cx?: number, cy?: number) => {
++    const el = box.current;
++    if (!el) return;
++    const n = Math.min(MAX_ZOOM, Math.max(1, next)), k = n / z.current;
++    if (k === 1) return;
++    const r = el.getBoundingClientRect();
++    const px = cx === undefined ? r.width / 2 : cx - r.left, py = cy === undefined ? r.height / 2 : cy - r.top;
++    const w = el.querySelector<HTMLElement>('.brochure-page')?.offsetWidth ?? r.width;
++    const pad = parseFloat(getComputedStyle(el).paddingTop) || 0;
++    const u = el.scrollLeft + px - Math.max(0, (r.width - w) / 2), v = el.scrollTop + py - pad;
++    z.current = n;
++    el.style.setProperty('--bz', String(n));
++    el.scrollLeft = u * k + Math.max(0, (r.width - w * k) / 2) - px;
++    el.scrollTop = v * k + pad - py;
++    clearTimeout(timer.current);
++    timer.current = window.setTimeout(() => setZoom(z.current), 180);
++  }, []);
++
++  // pinch (touch), ctrl+wheel / trackpad pinch, double-tap: same in portrait and landscape
++  useEffect(() => {
++    const el = box.current;
++    if (!el) return;
++    let d0 = 0, z0 = 1, tap = { t: 0, x: 0, y: 0 }, from = { x: 0, y: 0 };
++    const mid = (e: TouchEvent) => ({ x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 });
++    const dist = (e: TouchEvent) => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
++    const ts = (e: TouchEvent) => {
++      if (e.touches.length === 2) { d0 = dist(e); z0 = z.current; }
++      else if (e.touches.length === 1) from = { x: e.touches[0].clientX, y: e.touches[0].clientY };
++    };
++    const tm = (e: TouchEvent) => {
++      if (e.touches.length !== 2 || !d0) return;
++      e.preventDefault();
++      const m = mid(e);
++      zoomTo((z0 * dist(e)) / d0, m.x, m.y);
++    };
++    const te = (e: TouchEvent) => {
++      if (e.touches.length < 2) d0 = 0;
++      if (e.touches.length || e.changedTouches.length !== 1) return;
++      const c = e.changedTouches[0], now = Date.now();
++      if (Math.hypot(c.clientX - from.x, c.clientY - from.y) > 10) { tap.t = 0; return; }
++      if (now - tap.t < 300 && Math.hypot(c.clientX - tap.x, c.clientY - tap.y) < 30) {
++        zoomTo(z.current > 1 ? 1 : 2.5, c.clientX, c.clientY);
++        tap.t = 0;
++      } else tap = { t: now, x: c.clientX, y: c.clientY };
++    };
++    const wheel = (e: WheelEvent) => {
++      if (!e.ctrlKey) return;
++      e.preventDefault();
++      zoomTo(z.current * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
++    };
++    const gs = (e: Event) => e.preventDefault(); // iOS Safari: pinch zooms the pages, not the whole page
++    el.addEventListener('touchstart', ts, { passive: true });
++    el.addEventListener('touchmove', tm, { passive: false });
++    el.addEventListener('touchend', te, { passive: true });
++    el.addEventListener('wheel', wheel, { passive: false });
++    el.addEventListener('gesturestart', gs);
++    return () => {
++      el.removeEventListener('touchstart', ts); el.removeEventListener('touchmove', tm); el.removeEventListener('touchend', te);
++      el.removeEventListener('wheel', wheel); el.removeEventListener('gesturestart', gs); clearTimeout(timer.current);
++    };
++  }, [zoomTo]);
++
+   useEffect(() => {
+     let dead = false;
+     let loading: { promise: Promise<PDFDocumentProxy>; destroy: () => Promise<void> } | undefined;
+@@ -65,10 +137,18 @@ export default function BrochureViewer({ src }: { src: string }) {
+   return (
+     <>
+       <div className="brochure-bg">{cover && <img className="brochure-blur" src={cover} alt="" aria-hidden="true" />}</div>
+-      <div className="brochure" role="document" aria-label="Brochure">
++      <div className="bz-ctl" role="group" aria-label="Zoom controls">
++        <button type="button" className="ctl" aria-label="Zoom in" disabled={zoom >= MAX_ZOOM} onClick={() => zoomTo(z.current * 1.5)}>
++          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
++        </button>
++        <button type="button" className="ctl" aria-label="Zoom out" disabled={zoom <= 1} onClick={() => zoomTo(z.current / 1.5)}>
++          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M5 12h14" /></svg>
++        </button>
++      </div>
++      <div ref={box} className="brochure" role="document" aria-label="Brochure">
+         {failed && <p className="brochure-msg">The brochure could not be loaded. <a href={src} download>Download the PDF</a></p>}
+         {!doc && !failed && <p className="brochure-msg">Loading brochure…</p>}
+-        {doc && Array.from({ length: doc.numPages }, (_, i) => <Page key={i} doc={doc} n={i + 1} />)}
++        {doc && Array.from({ length: doc.numPages }, (_, i) => <Page key={i} doc={doc} n={i + 1} zoom={zoom} />)}
+       </div>
+     </>
+   );
+diff --git a/src/components/FloorPlanScene.tsx b/src/components/FloorPlanScene.tsx
+index 4ee7b37..86e7855 100644
+--- a/src/components/FloorPlanScene.tsx
++++ b/src/components/FloorPlanScene.tsx
+@@ -25,10 +25,11 @@ export default function FloorPlanScene() {
+   const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
+ 
+   const foot = !unit && tab.plans.length > 1; // Type toggle lives in a white strip under the plan, so it never covers the key map
++  const backLabel = tab.plans.length > 1 ? `${tab.label} ${plan.label}` : tab.label; // Back returns to the Type the unit was opened from
+   const cardCls = foot ? 'fp-card foot' : 'fp-card';
+ 
+   const zoomEl = unit ? (
+-    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`}>
++    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`} onBack={() => setUnit(null)} backLabel={backLabel}>
+       <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
+     </ZoomPan>
+   ) : (
+diff --git a/src/components/RenderScene.tsx b/src/components/RenderScene.tsx
+index 154440b..e37181f 100644
+--- a/src/components/RenderScene.tsx
++++ b/src/components/RenderScene.tsx
+@@ -1,5 +1,5 @@
+ 'use client';
+-import { useState } from 'react';
++import { useEffect, useRef, useState } from 'react';
+ import SceneFrame from './SceneFrame';
+ import SideMenu from './SideMenu';
+ import RenderPanel from './RenderPanel';
+@@ -10,9 +10,27 @@ export default function RenderScene() {
+   const [id, setId] = useState(renders.items[0].id);
+   const i = Math.max(0, renders.items.findIndex((r) => r.id === id));
+   const cur = renders.items[i];
++  const len = renders.items.length;
++  const go = (d: -1 | 1) => setId(renders.items[(i + d + len) % len].id);
++  const goRef = useRef(go);
++  goRef.current = go;
++  // Gallery: swipe (finger / pen / mouse drag) or arrow keys, in portrait and landscape
++  const start = useRef<{ x: number; y: number } | null>(null);
++  const swipe = (e: React.PointerEvent) => {
++    const a = start.current; start.current = null;
++    if (!a) return;
++    const dx = e.clientX - a.x, dy = e.clientY - a.y;
++    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) goRef.current(dx < 0 ? 1 : -1);
++  };
++  useEffect(() => {
++    const k = (e: KeyboardEvent) => { if (e.key === 'ArrowRight') goRef.current(1); else if (e.key === 'ArrowLeft') goRef.current(-1); };
++    window.addEventListener('keydown', k);
++    return () => window.removeEventListener('keydown', k);
++  }, []);
+   // Portrait renders keep their true shape; a blurred copy of the same image fills the sides behind it.
+   const bg = (
+-    <div className="render-bg" key={cur.id}>
++    <div className="render-bg" key={cur.id} onPointerDown={(e) => { start.current = { x: e.clientX, y: e.clientY }; }}
++      onPointerUp={swipe} onPointerCancel={() => { start.current = null; }}>
+       {cur.portrait && <img className="render-blur" src={cur.src} alt="" aria-hidden="true" />}
+       <img className={cur.portrait ? 'render-img contain' : 'render-img'} src={cur.src} alt={cur.label} draggable={false} />
+     </div>
+diff --git a/src/components/ZoomPan.tsx b/src/components/ZoomPan.tsx
+index 92aa6b0..080083a 100644
+--- a/src/components/ZoomPan.tsx
++++ b/src/components/ZoomPan.tsx
+@@ -8,7 +8,8 @@ const PINCH_GAIN = 2; // fingers move less than the image zooms, so one spread i
+ type T = { s: number; x: number; y: number };
+ 
+ // Pinch / wheel / double-tap / drag zoom for one child. Children get `--z` (current scale) so overlays can counter-scale.
+-export default function ZoomPan({ children, label = 'Zoom' }: { children: React.ReactNode; label?: string }) {
++// onBack (optional) adds a bottom-left Back button that stays reachable at any zoom level and in fullscreen.
++export default function ZoomPan({ children, label = 'Zoom', onBack, backLabel = 'Back' }: { children: React.ReactNode; label?: string; onBack?: () => void; backLabel?: string }) {
+   const box = useRef<HTMLDivElement>(null);
+   const root = useRef<HTMLDivElement>(null);
+   const [fs, setFs] = useState(false);
+@@ -194,8 +195,15 @@ export default function ZoomPan({ children, label = 'Zoom' }: { children: React.
+         onDoubleClick={(e) => { if (t.s > 1) go({ s: 1, x: 0, y: 0 }); else { const p = rel(e); zoomAt(2.5, p.x, p.y); } }}>
+         <div className="zoom-layer" style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, ['--z' as string]: t.s }}>{children}</div>
+       </div>
+-      {fs && (
+-        <button type="button" className="ctl zoom-close" aria-label="Exit fullscreen" onClick={() => void document.exitFullscreen()}>
++      {onBack && (
++        <button type="button" className="ctl zoom-back" aria-label={`Back to ${backLabel}`} onClick={onBack}>
++          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
++          <span>Back</span>
++        </button>
++      )}
++      {(fs || t.s > 1.001) && (
++        <button type="button" className="ctl zoom-close" aria-label={fs ? 'Exit fullscreen' : 'Close zoom'}
++          onClick={() => (fs ? void document.exitFullscreen() : go({ s: 1, x: 0, y: 0 }))}>
+           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+         </button>
+       )}
+diff --git a/tests/floorplan.test.tsx b/tests/floorplan.test.tsx
+index 5590521..f45692f 100644
+--- a/tests/floorplan.test.tsx
++++ b/tests/floorplan.test.tsx
+@@ -1,5 +1,5 @@
+ import { describe, it, expect, vi } from 'vitest';
+-import { render, screen, fireEvent } from '@testing-library/react';
++import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+ import FloorPlanScene from '@/components/FloorPlanScene';
+ 
+@@ -25,4 +25,21 @@ describe('floor plans', () => {
+     fireEvent.keyDown(window, { key: 'Escape' });
+     expect(screen.getAllByRole('button', { name: /^Unit 0\d/ })).toHaveLength(4);
+   });
++  it('unit plan has a Back button that returns to the Type it was opened from', () => {
++    render(<FloorPlanScene />);
++    fireEvent.click(screen.getByRole('button', { name: 'Type 2' }));
++    fireEvent.click(screen.getByRole('button', { name: /Unit 01 · 1806/ }));
++    expect(screen.queryByRole('button', { name: 'Type 2' })).toBeNull();
++    fireEvent.click(screen.getByRole('button', { name: 'Back to Typical Type 2' }));
++    expect(screen.getByRole('button', { name: 'Type 2' }).getAttribute('aria-pressed')).toBe('true');
++    expect(screen.getAllByRole('button', { name: /^Unit 0\d/ })).toHaveLength(4);
++  });
++  it('shows a Close button once the plan is zoomed; it zooms back out', async () => {
++    render(<FloorPlanScene />);
++    expect(screen.queryByRole('button', { name: 'Close zoom' })).toBeNull();
++    fireEvent.click(screen.getAllByRole('button', { name: 'Zoom in' })[0]);
++    const close = await screen.findByRole('button', { name: 'Close zoom' });
++    fireEvent.click(close);
++    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close zoom' })).toBeNull());
++  });
+ });
+diff --git a/tests/renders-swipe.test.tsx b/tests/renders-swipe.test.tsx
+new file mode 100644
+index 0000000..f0bf521
+--- /dev/null
++++ b/tests/renders-swipe.test.tsx
+@@ -0,0 +1,32 @@
++import { describe, it, expect, vi, beforeAll } from 'vitest';
++import { render, screen, fireEvent } from '@testing-library/react';
++vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
++import RenderScene from '@/components/RenderScene';
++
++// jsdom has no PointerEvent, so clientX would be dropped
++beforeAll(() => { if (!('PointerEvent' in window)) (window as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent = class extends MouseEvent {}; });
++
++const counter = () => document.querySelector('.render-count')!.textContent;
++const swipe = (dx: number, dy = 0) => {
++  const bg = document.querySelector('.render-bg')!;
++  fireEvent.pointerDown(bg, { clientX: 300, clientY: 200 });
++  fireEvent.pointerUp(bg, { clientX: 300 + dx, clientY: 200 + dy });
++};
++
++describe('renders gallery', () => {
++  it('swipe left / right and arrow keys change the render; short or vertical drags do not', () => {
++    render(<RenderScene />);
++    const total = counter()!.split('/')[1].trim();
++    expect(counter()).toBe(`1 / ${total}`);
++    swipe(-120);
++    expect(counter()).toBe(`2 / ${total}`);
++    swipe(120);
++    expect(counter()).toBe(`1 / ${total}`);
++    swipe(-20);
++    swipe(-100, 120);
++    expect(counter()).toBe(`1 / ${total}`);
++    fireEvent.keyDown(window, { key: 'ArrowRight' });
++    expect(counter()).toBe(`2 / ${total}`);
++    expect(screen.getByLabelText(/Render 2 of/)).toBeTruthy();
++  });
++});
+diff --git a/tests/stage4.test.tsx b/tests/stage4.test.tsx
+index 52e0a9f..7a80580 100644
+--- a/tests/stage4.test.tsx
++++ b/tests/stage4.test.tsx
+@@ -93,7 +93,7 @@ describe('fonts + scaling', () => {
+     expect(existsSync('public/fonts/PlayfairDisplay-Regular.woff2')).toBe(true);
+   });
+   it('scales every Figma px with the viewport (rem driven by min(vw, vh)) so laptops are not oversized', () => {
+-    expect(css).toMatch(/html\s*\{[^}]*font-size:\s*min\(/);
++    expect(css).toMatch(/html\s*\{[^}]*font-size:\s*max\(min\(/); // still min(vw, vh), with a 10px floor for phones and portrait tablets
+   });
+ });
+ 

@@ -25,10 +25,11 @@ export default function FloorPlanScene() {
   const pickTab = (id: string) => { setTabId(id); setPlanIdx(0); setUnit(null); };
 
   const foot = !unit && tab.plans.length > 1; // Type toggle lives in a white strip under the plan, so it never covers the key map
+  const backLabel = tab.plans.length > 1 ? `${tab.label} ${plan.label}` : tab.label; // Back returns to the Type the unit was opened from
   const cardCls = foot ? 'fp-card foot' : 'fp-card';
 
   const zoomEl = unit ? (
-    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`}>
+    <ZoomPan key={`u-${unit.id}`} label={`${unit.label} plan`} onBack={() => setUnit(null)} backLabel={backLabel}>
       <img className="fp-img" src={unit.src} alt={`${unit.label} floor plan`} draggable={false} />
     </ZoomPan>
   ) : (

@@ -93,7 +93,7 @@ describe('fonts + scaling', () => {
     expect(existsSync('public/fonts/PlayfairDisplay-Regular.woff2')).toBe(true);
   });
   it('scales every Figma px with the viewport (rem driven by min(vw, vh)) so laptops are not oversized', () => {
-    expect(css).toMatch(/html\s*\{[^}]*font-size:\s*min\(/);
+    expect(css).toMatch(/html\s*\{[^}]*font-size:\s*max\(min\(/); // still min(vw, vh), with a 10px floor for phones and portrait tablets
   });
 });
 
